@@ -6,20 +6,30 @@ import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-public class MyInputMethodService extends InputMethodService{
+public class MyInputMethodService extends android.inputmethodservice.InputMethodService {
+
+    KeyboardView keyboardView;
 
     @Override
     public View onCreateInputView() {
         // get the KeyboardView and add our Keyboard layout to it
-        KeyboardView keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
+        keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
         Keyboard keyboard = new Keyboard(this, R.xml.keyboard_qwerty);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(keyBoardAction);
 
+        keyboardView.setPreviewEnabled(false);
+
+
+
         return keyboardView;
     }
+
+
 
     private void pressedDelete(InputConnection ic){
         CharSequence selectedText = ic.getSelectedText(0);
@@ -50,7 +60,6 @@ public class MyInputMethodService extends InputMethodService{
             if (ic == null) return;
             switch (primaryCode) {
                 case Keyboard.KEYCODE_DELETE:
-                    Log.i("pttt", "Deleted");
                     pressedDelete(ic);
                     break;
                 case Keyboard.KEYCODE_MODE_CHANGE:

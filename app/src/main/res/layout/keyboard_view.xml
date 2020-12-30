@@ -4,7 +4,7 @@
     android:id="@+id/keyboard_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:keyPreviewLayout="@layout/key_preview"
+
     android:layout_alignParentBottom="true">
 
 </android.inputmethodservice.KeyboardView>

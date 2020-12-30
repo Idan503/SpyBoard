@@ -71,18 +71,17 @@
 
     <Row android:rowEdgeFlags="bottom">
         <Key android:codes="-3" android:keyLabel="\?123"
-            android:keyWidth="20%p" android:keyEdgeFlags="left"/>
+            android:keyWidth="17%p" android:keyEdgeFlags="left"/>
         <Key android:codes="46" android:keyLabel=","
-            android:keyWidth="13%p"/>
+            android:keyWidth="11%p"/>
         <Key android:codes="46" android:keyIcon="@drawable/sym_keyboard_language"
-            android:keyWidth="15%p"/>
-        <Key android:codes="-2" android:keyLabel="123" android:keyWidth="15%p"/>
+            android:keyWidth="12%p"/>
         <Key android:codes="32" android:keyLabel=" "
-            android:keyWidth="25%p" android:isRepeatable="true"/>
+            android:keyWidth="38%p" android:isRepeatable="true"/>
         <Key android:codes="44" android:keyLabel="."
-            android:keyWidth="16%p"/>
+            android:keyWidth="13%p"/>
         <Key android:codes="10"
             android:keyIcon="@drawable/sym_keyboard_enter"
-            android:keyWidth="15%p" android:keyEdgeFlags="right"/>
+            android:keyWidth="19%p" android:keyEdgeFlags="right"/>
     </Row>
 </Keyboard>
