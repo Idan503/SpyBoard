@@ -17,6 +17,7 @@ public class MyInputMethodService extends InputMethodService{
         Keyboard keyboard = new Keyboard(this, R.xml.keyboard_qwerty);
         keyboardView.setKeyboard(keyboard);
         keyboardView.setOnKeyboardActionListener(keyBoardAction);
+
         return keyboardView;
     }
 
@@ -49,6 +50,7 @@ public class MyInputMethodService extends InputMethodService{
             if (ic == null) return;
             switch (primaryCode) {
                 case Keyboard.KEYCODE_DELETE:
+                    Log.i("pttt", "Deleted");
                     pressedDelete(ic);
                     break;
                 case Keyboard.KEYCODE_MODE_CHANGE:
