@@ -13,6 +13,8 @@ import android.view.inputmethod.InputConnection;
 public class MyInputMethodService extends android.inputmethodservice.InputMethodService {
 
     KeyboardView keyboardView;
+    
+    boolean caps = false;
 
     @Override
     public View onCreateInputView() {
@@ -42,6 +44,17 @@ public class MyInputMethodService extends android.inputmethodservice.InputMethod
         }
     }
 
+    private void pressedShift(){
+        caps = !caps;
+    }
+    
+    private void pressedSimpleKey(int primaryCode, InputConnection ic){
+        primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode;
+        // converting to upper case when shift
+        char code = (char) primaryCode; // converting to char
+        ic.commitText(String.valueOf(code), 1); //writing to screen
+    }
+    
     KeyboardView.OnKeyboardActionListener keyBoardAction = new KeyboardView.OnKeyboardActionListener() {
         @Override
         public void onPress(int primaryCode) {
@@ -62,14 +75,17 @@ public class MyInputMethodService extends android.inputmethodservice.InputMethod
                 case Keyboard.KEYCODE_DELETE:
                     pressedDelete(ic);
                     break;
+                case Keyboard.KEYCODE_SHIFT:
+                    pressedShift();
+                    break;
                 case Keyboard.KEYCODE_MODE_CHANGE:
                     //change to hebrew
                     break;
                 default:
-                    char code = (char) primaryCode;
-                    ic.commitText(String.valueOf(code), 1);
+                    pressedSimpleKey(primaryCode, ic);
             }
         }
+        
 
 
         @Override
