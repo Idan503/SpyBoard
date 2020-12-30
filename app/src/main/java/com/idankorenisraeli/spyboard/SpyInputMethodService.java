@@ -1,27 +1,40 @@
 package com.idankorenisraeli.spyboard;
 
-import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-public class MyInputMethodService extends android.inputmethodservice.InputMethodService {
+/**
+ * This class will simulate the functionality of an android keyboard,
+ * With custom tracking of all the pressed keys
+ */
+public class SpyInputMethodService extends android.inputmethodservice.InputMethodService {
 
-    KeyboardView keyboardView;
+    SpyKeyboardView keyboardView;
     
     boolean caps = false;
+    boolean hebrewMode = false;
+
+    Keyboard engKeyboard, hebKeyboard;
+
+
+    private final static int WHITE_THEME = 1;
+    private final static int GRAY_THEME = 2;
+    private final static int BLUE_THEME = 3;
+
+
 
     @Override
     public View onCreateInputView() {
         // get the KeyboardView and add our Keyboard layout to it
-        keyboardView = (KeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view, null);
-        Keyboard keyboard = new Keyboard(this, R.xml.keyboard_qwerty);
-        keyboardView.setKeyboard(keyboard);
+        keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_blue, null);
+        engKeyboard = new Keyboard(this, R.xml.qwerty_eng);
+        hebKeyboard = new Keyboard(this, R.xml.qwerty_heb);
+
+        keyboardView.setKeyboard(engKeyboard); //english by default
         keyboardView.setOnKeyboardActionListener(keyBoardAction);
 
         keyboardView.setPreviewEnabled(false);
@@ -31,6 +44,11 @@ public class MyInputMethodService extends android.inputmethodservice.InputMethod
         return keyboardView;
     }
 
+    private void switchLanguage(){
+        hebrewMode = !hebrewMode;
+        keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
+        // Updating the keyboard view based on the current mode
+    }
 
 
     private void pressedDelete(InputConnection ic){
@@ -48,12 +66,17 @@ public class MyInputMethodService extends android.inputmethodservice.InputMethod
         caps = !caps;
     }
     
-    private void pressedSimpleKey(int primaryCode, InputConnection ic){
-        primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode;
-        // converting to upper case when shift
+
+    private void pressedCharacter(int primaryCode, InputConnection ic){
+        primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
         char code = (char) primaryCode; // converting to char
         ic.commitText(String.valueOf(code), 1); //writing to screen
+
+        // TODO: 30/12/2020 Add tacking of this key
     }
+
+
+    // TODO: 30/12/2020 Add spacebar tacking 
     
     KeyboardView.OnKeyboardActionListener keyBoardAction = new KeyboardView.OnKeyboardActionListener() {
         @Override
@@ -79,10 +102,10 @@ public class MyInputMethodService extends android.inputmethodservice.InputMethod
                     pressedShift();
                     break;
                 case Keyboard.KEYCODE_MODE_CHANGE:
-                    //change to hebrew
+                    switchLanguage();
                     break;
                 default:
-                    pressedSimpleKey(primaryCode, ic);
+                    pressedCharacter(primaryCode, ic);
             }
         }
         

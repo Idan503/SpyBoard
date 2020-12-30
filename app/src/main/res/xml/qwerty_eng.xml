@@ -74,7 +74,7 @@
             android:keyWidth="17%p" android:keyEdgeFlags="left"/>
         <Key android:codes="46" android:keyLabel=","
             android:keyWidth="11%p"/>
-        <Key android:codes="46" android:keyIcon="@drawable/sym_keyboard_language"
+        <Key android:codes="-2" android:keyIcon="@drawable/sym_keyboard_language"
             android:keyWidth="12%p"/>
         <Key android:codes="32" android:keyLabel=" "
             android:keyWidth="38%p" android:isRepeatable="true"/>

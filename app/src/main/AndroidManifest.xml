@@ -18,7 +18,7 @@
         </activity>
 
         <service
-            android:name=".MyInputMethodService"
+            android:name=".SpyInputMethodService"
             android:label="Keyboard Display Name"
             android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>
