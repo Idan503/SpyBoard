@@ -34,7 +34,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         engKeyboard = new Keyboard(this, R.xml.qwerty_eng);
         hebKeyboard = new Keyboard(this, R.xml.qwerty_heb);
 
-        keyboardView.setKeyboard(engKeyboard); //english by default
+        keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
         keyboardView.setOnKeyboardActionListener(keyBoardAction);
 
         keyboardView.setPreviewEnabled(false);
@@ -64,6 +64,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     private void pressedShift(){
         caps = !caps;
+        keyboardView.setShifted(caps);
     }
     
 
