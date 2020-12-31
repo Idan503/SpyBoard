@@ -1,11 +1,13 @@
-package com.idankorenisraeli.spyboard;
+package com.idankorenisraeli.spyboard.input;
 
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
+
+import com.idankorenisraeli.spyboard.utils.KeycodeDictionary;
+import com.idankorenisraeli.spyboard.R;
 
 /**
  * This class will simulate the functionality of an android keyboard,
@@ -14,6 +16,8 @@ import android.view.inputmethod.InputConnection;
 public class SpyInputMethodService extends android.inputmethodservice.InputMethodService {
 
     SpyKeyboardView keyboardView;
+
+    KeycodeDictionary dictionary;
     
     boolean caps = false;
     boolean hebrewMode = false;
@@ -33,6 +37,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_blue, null);
         engKeyboard = new Keyboard(this, R.xml.qwerty_eng);
         hebKeyboard = new Keyboard(this, R.xml.qwerty_heb);
+
+        dictionary = KeycodeDictionary.getInstance();
 
         keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
         keyboardView.setOnKeyboardActionListener(keyBoardAction);
@@ -72,7 +78,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         char code;
         if(hebrewMode){
-            code = engToHeb(primaryCode);
+            code = dictionary.engToHeb(primaryCode);
         }
         else{
             primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
@@ -84,73 +90,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         // TODO: 30/12/2020 Add tacking of this key
     }
 
-    private char engToHeb(int primaryCode){
-        switch (primaryCode){
-            case 'q':
-                return '/';
-            case 'w':
-                return '\'';
-            case 'e':
-                return 'ק';
-            case 'r':
-                return 'ר';
-            case 't':
-                return 'א';
-            case 'y':
-                return 'ט';
-            case 'u':
-                return 'ו';
-            case 'i':
-                return 'ן';
-            case 'o':
-                return 'ם';
-            case 'p':
-                return 'פ';
-            case 'a':
-                return 'ש';
-            case 's':
-                return 'ד';
-            case 'd':
-                return 'ג';
-            case 'f':
-                return 'כ';
-            case 'g':
-                return 'ע';
-            case 'h':
-                return 'י';
-            case 'j':
-                return 'ח';
-            case 'k':
-                return 'ל';
-            case 'l':
-                return 'ך';
-            case 878:
-                return 'ף';
-            case 'z':
-                return 'ז';
-            case 'x':
-                return 'ס';
-            case 'c':
-                return 'ב';
-            case 'v':
-                return 'ה';
-            case 'b':
-                return 'נ';
-            case 'n':
-                return 'מ';
-            case 'm':
-                return 'צ';
-            case 879:
-                return 'ת';
-            case 880:
-                return 'ץ';
-            case 881:
-                return '-';
-
-
-        }
-        return (char)primaryCode; // couldn't find any heb key
-    }
 
 
     // TODO: 30/12/2020 Add spacebar tacking 
@@ -168,7 +107,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         @Override
         public void onKey(int primaryCode, int[] keyCodes) {
-            Log.i("pttt", "primary: " + primaryCode + " | keycodes: " + keyCodes.length);
             InputConnection ic = getCurrentInputConnection();
             if (ic == null) return;
             switch (primaryCode) {

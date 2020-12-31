@@ -9,7 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SpyBoard">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -18,7 +18,7 @@
         </activity>
 
         <service
-            android:name=".SpyInputMethodService"
+            android:name=".input.SpyInputMethodService"
             android:label="Keyboard Display Name"
             android:permission="android.permission.BIND_INPUT_METHOD">
             <intent-filter>

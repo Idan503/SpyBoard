@@ -1,8 +1,10 @@
-package com.idankorenisraeli.spyboard;
+package com.idankorenisraeli.spyboard.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+
+import com.idankorenisraeli.spyboard.R;
 
 public class MainActivity extends AppCompatActivity {
 

@@ -1,4 +1,4 @@
-package com.idankorenisraeli.spyboard;
+package com.idankorenisraeli.spyboard.input;
 
 import android.content.Context;
 import android.graphics.Canvas;

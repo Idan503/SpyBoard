@@ -29,7 +29,7 @@
         android:horizontalGap="2px"
         android:verticalGap="2px"
         android:keyWidth="10%p">
-        <Key android:codes="119" android:keyLabel="'" />
+        <Key android:codes="119" android:keyLabel="'"/>
         <Key android:codes="881" android:keyLabel="-"/>
         <Key android:codes="101" android:keyLabel="ק"/>
         <Key android:codes="114" android:keyLabel="ר"/>
