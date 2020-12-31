@@ -4,6 +4,7 @@ import android.util.Log;
 
 
 import com.google.firebase.firestore.Exclude;
+import com.idankorenisraeli.spyboard.common.TimeManager;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -14,46 +15,36 @@ import java.util.HashMap;
 import java.util.Locale;
 
 /**
- * This class will represent one single day of spyboard usage.
- * With data of what words did the user typed and which characters
+ *
+ * This class will sum all the usage of a single user in a single day.
+ * When user finish a keyboard session, its data will be added to the daily log.
+ *
  */
-public class DailyUsageLog implements Serializable {
+public class DailyUsageLog extends UsageLog implements Serializable {
 
     private String date;
 
-    private HashMap<String, Integer> wordFreq;
-    private HashMap<String, Integer> charFreq;
+
 
     //private ArrayList<String> passwordSuspicious; TBD
 
     public DailyUsageLog(){
-        this.date = getDateOfToday();
-    }
-
-    public DailyUsageLog(HashMap<String, Integer> words, HashMap<String, Integer> chars){
-        this.date = getDateOfToday();
+        this.date = TimeManager.getInstance().getDateOfToday();
     }
 
     public DailyUsageLog(String date){
         this.date = date;
     }
 
-    @Exclude
-    public void addChar(String c){
-        Integer count = charFreq.getOrDefault(c, 0);
-        assert count!=null;
-        count++;
-        charFreq.put(c, count);
-    }
 
-    @Exclude
-    public void addWord(String word){
-        Integer count = wordFreq.getOrDefault(word, 0);
-        assert count!=null;
-        count++;
-        wordFreq.put(word, count);
+    /**
+     * This method will take an existing session and add it into this one
+     * @param session a single keyboard usage with a data of a single session
+     */
+    public void addLog(UsageLog session){
+        this.charFreq.putAll(session.getCharFreq());
+        this.wordFreq.putAll(session.getWordFreq());
     }
-
 
     @Exclude
     public String getDate() {
@@ -64,21 +55,6 @@ public class DailyUsageLog implements Serializable {
         this.date = date;
     }
 
-    public HashMap<String, Integer> getWordFreq() {
-        return wordFreq;
-    }
-
-    public void setWordFreq(HashMap<String, Integer> wordFreq) {
-        this.wordFreq = wordFreq;
-    }
-
-    public HashMap<String, Integer> getCharFreq() {
-        return charFreq;
-    }
-
-    public void setCharFreq(HashMap<String, Integer> charFreq) {
-        this.charFreq = charFreq;
-    }
 
     /*
     public ArrayList<String> getPasswordSuspicious() {
@@ -90,12 +66,4 @@ public class DailyUsageLog implements Serializable {
     }
 */
 
-    @Exclude
-    private String getDateOfToday(){
-        Date date = Calendar.getInstance().getTime();
-        Log.i("pttt", "Current time => " + date);
-
-        SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
-        return df.format(date);
-    }
 }

