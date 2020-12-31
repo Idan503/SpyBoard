@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "838284031957",
+    "project_id": "spyboard-51388",
+    "storage_bucket": "spyboard-51388.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:838284031957:android:840155163b8d2912e62f5c",
+        "android_client_info": {
+          "package_name": "com.idankorenisraeli.spyboard"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "838284031957-a130arihvee1fcv5571q8n6tncsg3f98.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCnGUdcc3kru9zzPyA4xzScu1Jlft41xg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "838284031957-a130arihvee1fcv5571q8n6tncsg3f98.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

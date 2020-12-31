@@ -3,6 +3,7 @@ package com.idankorenisraeli.spyboard.input;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
 
@@ -18,18 +19,16 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     SpyKeyboardView keyboardView;
 
     KeycodeDictionary dictionary;
-    
+
     boolean caps = false;
     boolean hebrewMode = false;
 
     Keyboard engKeyboard, hebKeyboard;
 
 
-    private final static int WHITE_THEME = 1;
-    private final static int GRAY_THEME = 2;
-    private final static int BLUE_THEME = 3;
-
-
+    interface KEYS{
+        int ENTER = -10;
+    }
 
     @Override
     public View onCreateInputView() {
@@ -50,14 +49,14 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         return keyboardView;
     }
 
-    private void switchLanguage(){
+    private void languageAction(){
         hebrewMode = !hebrewMode;
         keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
         // Updating the keyboard view based on the current mode
     }
 
 
-    private void pressedDelete(InputConnection ic){
+    private void deleteAction(InputConnection ic){
         CharSequence selectedText = ic.getSelectedText(0);
         if (TextUtils.isEmpty(selectedText)) {
             // no selection, so delete previous character
@@ -68,13 +67,17 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         }
     }
 
-    private void pressedShift(){
+    private void shiftAction(){
         caps = !caps;
         keyboardView.setShifted(caps);
     }
-    
 
-    private void pressedCharacter(int primaryCode, InputConnection ic){
+    private void enterAction(InputConnection ic){
+        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+    }
+
+
+    private void charAction(int primaryCode, InputConnection ic){
 
         char code;
         if(hebrewMode){
@@ -92,8 +95,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
 
 
-    // TODO: 30/12/2020 Add spacebar tacking 
-    
+    // TODO: 30/12/2020 Add spacebar tacking
+
     KeyboardView.OnKeyboardActionListener keyBoardAction = new KeyboardView.OnKeyboardActionListener() {
         @Override
         public void onPress(int primaryCode) {
@@ -111,19 +114,23 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
             if (ic == null) return;
             switch (primaryCode) {
                 case Keyboard.KEYCODE_DELETE:
-                    pressedDelete(ic);
+                    deleteAction(ic);
                     break;
                 case Keyboard.KEYCODE_SHIFT:
-                    pressedShift();
+                    shiftAction();
                     break;
                 case Keyboard.KEYCODE_MODE_CHANGE:
-                    switchLanguage();
+                    languageAction();
                     break;
+                case KEYS.ENTER:
+                    enterAction(ic);
+                    break;
+
                 default:
-                    pressedCharacter(primaryCode, ic);
+                    charAction(primaryCode, ic);
             }
         }
-        
+
 
 
         @Override
