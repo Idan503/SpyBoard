@@ -30,7 +30,6 @@ public class DatabaseManager {
         String USERS = "users";
         String DAILY_LOGS = "daily_logs";
 
-
         String UID = "my_uid";
     }
 
@@ -135,7 +134,7 @@ public class DatabaseManager {
     }
 
     private String getDailyLogSPKey(String date) {
-        return KEYS.DAILY_LOGS + "_" + date;
+        return SharedPrefsManager.KEYS.SP_KEY_PREFIX + KEYS.DAILY_LOGS + "_" + date;
     }
 
 

@@ -1,18 +1,18 @@
 package com.idankorenisraeli.spyboard.data;
 
+import android.util.Log;
+
 import com.google.firebase.firestore.Exclude;
 
 import java.util.HashMap;
 
 public class UsageLog {
 
-    protected HashMap<String, Integer> wordFreq;
-    protected HashMap<String, Integer> charFreq;
+    protected HashMap<String, Integer> wordFreq = new HashMap<>();
+    protected HashMap<String, Integer> charFreq = new HashMap<>();
     //Firestore's keys are strings, therefor we will have here single character strings as key
 
     public UsageLog(){
-        this.wordFreq = new HashMap<>();
-        this.charFreq = new HashMap<>();
     }
 
     @Exclude
@@ -29,6 +29,8 @@ public class UsageLog {
         assert count!=null;
         count++;
         wordFreq.put(word, count);
+        Log.i("pttt" , "Added word "  + word + " | " + wordFreq.get(word) + " is the value");
+        Log.i("pttt" , "KEYSET: " + wordFreq.keySet().toString());
     }
 
     public HashMap<String, Integer> getWordFreq() {

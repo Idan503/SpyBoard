@@ -48,21 +48,38 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     @Override
     public View onCreateInputView() {
-        // get the KeyboardView and add our Keyboard layout to it
         keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_blue, null);
+        initKeyboards();
+        initDailyLog();
+
+        return keyboardView;
+    }
+
+    private void initKeyboards(){
         engKeyboard = new Keyboard(this, R.xml.qwerty_eng);
         hebKeyboard = new Keyboard(this, R.xml.qwerty_heb);
 
         dictionary = KeycodeDictionary.getInstance();
-        databaseManager = DatabaseManager.getInstance();
-        currentDate = TimeManager.getInstance().getDateOfToday();
 
         keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
         keyboardView.setOnKeyboardActionListener(keyBoardAction);
 
         keyboardView.setPreviewEnabled(false);
 
-        return keyboardView;
+    }
+
+    private void initDailyLog(){
+        databaseManager = DatabaseManager.getInstance();
+        currentDate = TimeManager.getInstance().getDateOfToday();
+        databaseManager.loadDailyLog(currentDate, new OnDailyLogLoaded() {
+            @Override
+            public void onDailyLogLoaded(DailyUsageLog loadedLog) {
+                if(loadedLog != null)
+                    dailyLog = loadedLog;
+                else
+                    dailyLog = new DailyUsageLog();
+            }
+        });
     }
 
 
@@ -119,9 +136,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     private void trackWord(){
         if(currentWord.length() > 0) {
             sessionUsageLog.addWord(currentWord.toString());
-            Log.i("pttt", "Tracked Word: " + currentWord.toString());
+            Log.i("pttt" , "Tracked " + currentWord.toString());
             currentWord = new StringBuilder(AVG_WORD_LENGTH);
-
         }
     }
 
@@ -209,7 +225,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
      * It will help us calcualte a new word even though user did not press the spacebar
      * because in messaging apps, like whatsapp, there is a 'send' key which is not a part of the keyboard
      * and there is still a new word there that needs to be tacked.
-     * @return true when there is a text
+     * @return true when there is a text before the cursor
      */
     private boolean isTextBefore(){
         InputConnection ic = getCurrentInputConnection();
@@ -217,69 +233,55 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     }
 
 
+
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
 
-        if (dailyLog == null) {
-            databaseManager.loadDailyLog(TimeManager.getInstance().getDateOfToday(), onDailyLogLoaded);
-        } else if (!currentDate.equals(TimeManager.getInstance().getDateOfToday())) {
-            // new day
-            dailyLog = new DailyUsageLog();
-        }
+        if(sessionUsageLog==null)
+            sessionUsageLog = new UsageLog();
 
-        sessionUsageLog = new UsageLog();
-        // New keyboard usage
+        if (!currentDate.equals(TimeManager.getInstance().getDateOfToday())) {
+            // new day
+            endInputSession(); //restart the current session
+            dailyLog = new DailyUsageLog(); //restart the daily log
+        }
 
     }
 
 
+    //This called before onStarted
+    @Override
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
+        super.onStartInput(attribute, restarting);
+        Log.i("pttt", "onStartInput");
+    }
+
     @Override
     public void onFinishInputView(boolean finishingInput) {
-
-
         super.onFinishInputView(finishingInput);
 
+        endInputSession();
+
+        if (dailyLog != null) {
+            databaseManager.saveDailyLog(dailyLog);
+            //Saving into database
+        }
+    }
+
+    private void endInputSession(){
         if (currentWord != null) {
             trackWord();
         }
         //Adding the last word written in this session
 
-        if (dailyLog != null) {
-            dailyLog.addLog(sessionUsageLog);
-            //Adding the session data that is finished to the day's total
+        Log.i("pttt", "Words:" + sessionUsageLog.getWordFreq());
+        dailyLog.addLog(sessionUsageLog);
+        //Adding the session data that is finished to the day's total
 
-            Log.i("pttt", "Daily " + dailyLog.getWordFreq().size());
-            databaseManager.saveDailyLog(dailyLog);
-            //Saving into database
-        } else
-            databaseManager.loadDailyLog(TimeManager.getInstance().getDateOfToday(),
-                    new OnDailyLogLoaded() {
-                        @Override
-                        public void onDailyLogLoaded(DailyUsageLog loadedLog) {
-
-                            if (loadedLog == null) {
-                                dailyLog = new DailyUsageLog();
-                                dailyLog.addLog(sessionUsageLog);
-                                databaseManager.saveDailyLog(dailyLog);
-                                //rebase log
-                            }
-                        }
-                    });
-
+        sessionUsageLog = new UsageLog();
+        // New keyboard usage
     }
 
-    //This will check if log of toady already exists, and update the daily dialog
-    OnDailyLogLoaded onDailyLogLoaded = new OnDailyLogLoaded() {
-        @Override
-        public void onDailyLogLoaded(DailyUsageLog loadedLog) {
 
-            if (loadedLog == null)
-                dailyLog = new DailyUsageLog(); // No daily log is saved
-            else {
-                Log.i("pttt", "Loaded found " + loadedLog.getDate());
-                dailyLog = loadedLog;
-            }
-        }
-    };
 }

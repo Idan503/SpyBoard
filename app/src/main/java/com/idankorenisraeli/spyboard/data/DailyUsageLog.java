@@ -13,6 +13,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 /**
  *
@@ -42,7 +45,22 @@ public class DailyUsageLog extends UsageLog implements Serializable {
      * @param session a single keyboard usage with a data of a single session
      */
     public void addLog(UsageLog session){
-        //TODO - re-implement
+
+        Log.i("pttt", "Words: ----- "+  session.getWordFreq().entrySet().toString());
+        for(Map.Entry<String, Integer> entry : session.getWordFreq().entrySet()) {
+            Integer sessionSum = session.getWordFreq().getOrDefault(entry.getKey(), 0);
+            if(sessionSum!=null)
+                wordFreq.merge(entry.getKey(), entry.getValue(), Integer::sum);
+        }
+
+        for(String key : session.getCharFreq().keySet()) {
+            Integer sessionSum = session.getCharFreq().getOrDefault(key, 0);
+            if(sessionSum!=null)
+                charFreq.merge(key, sessionSum, Integer::sum);
+            Log.i("pttt", "Key: " + key + " new value " + charFreq.get(key));
+
+        }
+
     }
 
     @Exclude

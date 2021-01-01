@@ -46,9 +46,9 @@ public class SharedPrefsManager {
 
 
     public interface KEYS {
-        String SP_NAME = "MY_SETTINGS_SP_DB";
+        String SP_NAME = "SPYBOARD_SP_DB";
 
-        String SP_KEY_PREFIX = "SP_SETTING_";
+        String SP_KEY_PREFIX = "SP_SPYBOARD_";
     }
 
 
