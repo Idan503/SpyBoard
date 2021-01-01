@@ -26,7 +26,7 @@
     <Row
         android:horizontalGap="2px"
         android:verticalGap="2px"
-        android:keyWidth="9.75%p">
+        android:keyWidth="9.725%p">
         <Key android:codes="49" android:keyLabel="1" android:keyEdgeFlags="left"/>
         <Key android:codes="50" android:keyLabel="2"/>
         <Key android:codes="51" android:keyLabel="3"/>
@@ -42,7 +42,7 @@
     <Row
         android:horizontalGap="2px"
         android:verticalGap="2px"
-        android:keyWidth="9.75%p">
+        android:keyWidth="9.725%p">
 
         <Key android:codes="64" android:keyLabel="\@" android:keyEdgeFlags="left"/>
         <Key android:codes="35" android:keyLabel="#"/>
@@ -59,9 +59,9 @@
     <Row
         android:horizontalGap="2px"
         android:verticalGap="2px"
-        android:keyWidth="10%p">
+        android:keyWidth="9.9%p">
         <Key android:codes="-1"
-            android:keyWidth="15%p" android:isModifier="true"
+            android:keyWidth="13%p" android:isModifier="true"
             android:keyIcon="@drawable/sym_keyboard_shift"
             android:isSticky="true" android:keyEdgeFlags="left"/>
         <Key android:codes="42" android:keyLabel="*"/>
@@ -80,14 +80,12 @@
     <Row android:rowEdgeFlags="bottom"
         android:horizontalGap="2px"
         android:verticalGap="2px">
-        <Key android:codes="-3" android:keyLabel="\?123"
-            android:keyWidth="13%p" android:keyEdgeFlags="left"/>
+        <Key android:codes="-3" android:keyLabel="abc"
+            android:keyWidth="17%p" android:keyEdgeFlags="left"/>
         <Key android:codes="44" android:keyLabel=","
-            android:keyWidth="8%p"/>
-        <Key android:codes="-2" android:keyIcon="@drawable/sym_keyboard_language"
-            android:keyWidth="9%p"/>
+            android:keyWidth="10%p"/>
         <Key android:codes="32" android:keyLabel=" "
-            android:keyWidth="41%p" android:isRepeatable="true"/>
+            android:keyWidth="46%p" android:isRepeatable="true"/>
         <Key android:codes="46" android:keyLabel="."
             android:keyWidth="9%p"/>
         <Key android:codes="-10"
