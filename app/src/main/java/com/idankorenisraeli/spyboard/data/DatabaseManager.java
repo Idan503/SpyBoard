@@ -15,9 +15,9 @@ import com.idankorenisraeli.spyboard.common.SharedPrefsManager;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class FirebaseManager {
+public class DatabaseManager {
 
-    private static FirebaseManager instance = null;
+    private static DatabaseManager instance = null;
 
     private final FirebaseFirestore database = FirebaseFirestore.getInstance();
     private final SharedPrefsManager sharedPrefs = SharedPrefsManager.getInstance();
@@ -34,22 +34,24 @@ public class FirebaseManager {
         String UID = "my_uid";
     }
 
-    private FirebaseManager() {
+    private DatabaseManager() {
         usersRef = database.collection(KEYS.USERS);
         waitingList = new ArrayList<>();
     }
 
-    public static FirebaseManager getInstance() {
+    public static DatabaseManager getInstance() {
 
         if (instance == null)
-            instance = new FirebaseManager();
+            instance = new DatabaseManager();
         return instance;
     }
 
 
     //This will override the current daily log that is saved in db/sp
-    private void saveDailyLog(DailyUsageLog log) {
+    public void saveDailyLog(DailyUsageLog log) {
         assert log != null;
+
+        Log.i("pttt", "Saving " + log.getDate());
 
         getDailyLogDocRef(log.getDate()).set(log)
                 .addOnFailureListener(new OnFailureListener() {
@@ -78,6 +80,8 @@ public class FirebaseManager {
     }
 
     public void loadDailyLog(String date, OnDailyLogLoaded onLoaded) {
+        Log.i("pttt", "Trying to load " + date);
+
 
         Runnable checkOnSP = new Runnable() {
             @Override
@@ -96,6 +100,7 @@ public class FirebaseManager {
         getDailyLogDocRef(date).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
+                Log.i("pttt", "Firestore Load Success");
                 if(onLoaded!=null) {
                     if (documentSnapshot.exists())
                         onLoaded.onDailyLogLoaded(documentSnapshot.toObject(DailyUsageLog.class));

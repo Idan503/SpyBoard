@@ -42,8 +42,7 @@ public class DailyUsageLog extends UsageLog implements Serializable {
      * @param session a single keyboard usage with a data of a single session
      */
     public void addLog(UsageLog session){
-        this.charFreq.putAll(session.getCharFreq());
-        this.wordFreq.putAll(session.getWordFreq());
+        //TODO - re-implement
     }
 
     @Exclude

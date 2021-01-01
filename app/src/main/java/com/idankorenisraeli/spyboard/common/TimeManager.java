@@ -22,7 +22,6 @@ public class TimeManager {
 
     public String getDateOfToday(){
         Date date = Calendar.getInstance().getTime();
-        Log.i("pttt", "Current time => " + date);
 
         SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
         return df.format(date);
