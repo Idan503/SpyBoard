@@ -24,18 +24,31 @@ public class MainActivity extends AppCompatActivity {
 
         findViews();
 
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Editable name = nameEditText.getText();
-                if(name!=null)
-                    DatabaseManager.getInstance().setUserName(name.toString());
-            }
-        });
+        String name = DatabaseManager.getInstance().getUserName();
+        if (name != null) {
+            nameEditText.setText(name);
+            disableInterface();
+            //name already saved 
+        } else {
+            submitButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Editable name = nameEditText.getText();
+                    if (name != null) {
+                        DatabaseManager.getInstance().setUserName(name.toString());
+                        disableInterface();
+                    }
+                }
+            });
+        }
     }
 
+    private void disableInterface() {
+        nameEditText.setEnabled(false);
+        submitButton.setVisibility(View.GONE);
+    }
 
-    private void findViews(){
+    private void findViews() {
         this.submitButton = findViewById(R.id.main_BTN_submit);
         this.nameEditText = findViewById(R.id.main_EDT_name);
     }
