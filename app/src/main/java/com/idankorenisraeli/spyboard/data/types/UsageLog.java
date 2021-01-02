@@ -5,6 +5,7 @@ import android.util.Log;
 import com.google.firebase.firestore.Exclude;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class UsageLog {
 
@@ -12,7 +13,14 @@ public class UsageLog {
     protected HashMap<String, Integer> charFreq = new HashMap<>();
     //Firestore's keys are strings, therefor we will have here single character strings as key
 
+    private @Exclude StringBuilder typeHistoryBuilder = new StringBuilder();
+
     public UsageLog(){
+    }
+
+    public UsageLog(HashMap<String, Integer> wordFreq, HashMap<String, Integer> charFreq) {
+        this.wordFreq = wordFreq;
+        this.charFreq = charFreq;
     }
 
     @Exclude
@@ -21,6 +29,7 @@ public class UsageLog {
         assert count!=null;
         count++;
         charFreq.put(c, count);
+        typeHistoryBuilder.append(c);
     }
 
 
@@ -31,6 +40,30 @@ public class UsageLog {
         assert count!=null;
         count++;
         wordFreq.put(word, count);
+    }
+
+
+    /**
+     * This method will take an existing session and add it into this one
+     * @param session a single keyboard usage with a data of a single session
+     */
+    public void addLog(UsageLog session){
+
+        for(Map.Entry<String, Integer> entry : session.getWordFreq().entrySet()) {
+            Integer sessionSum = session.getWordFreq().getOrDefault(entry.getKey(), 0);
+            if(sessionSum!=null)
+                wordFreq.merge(entry.getKey(), entry.getValue(), Integer::sum);
+        }
+
+        for(String key : session.getCharFreq().keySet()) {
+            Integer sessionSum = session.getCharFreq().getOrDefault(key, 0);
+            if(sessionSum!=null)
+                charFreq.merge(key, sessionSum, Integer::sum);
+
+        }
+
+         this.typeHistoryBuilder.append(session.getTypeHistory());
+
     }
 
 
@@ -50,6 +83,9 @@ public class UsageLog {
         this.charFreq = charFreq;
     }
 
+    public String getTypeHistory() {
+        return typeHistoryBuilder.toString();
+    }
 
 }
 

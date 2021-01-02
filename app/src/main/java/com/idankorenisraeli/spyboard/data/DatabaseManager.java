@@ -14,6 +14,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.idankorenisraeli.spyboard.common.SharedPrefsManager;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
+import com.idankorenisraeli.spyboard.data.types.UsageLog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ public class DatabaseManager {
     interface KEYS {
         String USERS = "users";
         String DAILY_LOGS = "daily_logs";
-        String ALL_TIME = "all_time_data";
+        String ALL_TIME = "all_time";
         String ACCOUNTS = "accounts";
         String TOTAL = "total";
 
@@ -84,9 +85,18 @@ public class DatabaseManager {
                 });
     }
 
-    public void saveAccount(String username, String password) {
+    //This will override the current daily log that is saved in db/sp
+    public void saveTotalLog(@NonNull UsageLog log) {
+        sharedPrefs.putObject(getTotalLogSPKey(), log);
 
+        getTotalDocRef().set(log);
+    }
+
+
+    public void saveAccount(String username, String password) {
+        //TODO - SP save
         getAccountsDocRef().get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @SuppressWarnings("unchecked")
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
                 HashMap<String, String> accounts;
@@ -118,6 +128,11 @@ public class DatabaseManager {
 
     }
 
+    public UsageLog loadTotalLog() {
+        String spKey = getTotalLogSPKey();
+        return sharedPrefs.getObject(spKey, UsageLog.class);
+    }
+
 
     /**
      * This creates the unique reference of a log in the cloud firestore
@@ -132,7 +147,7 @@ public class DatabaseManager {
 
     private DocumentReference getAccountsDocRef() {
         return usersRef.document(getUID().concat("/")
-                .concat(KEYS.TOTAL).concat("/").concat(KEYS.ACCOUNTS));
+                .concat(KEYS.ALL_TIME).concat("/").concat(KEYS.ACCOUNTS));
     }
 
     private DocumentReference getTotalDocRef() {
@@ -142,6 +157,11 @@ public class DatabaseManager {
 
     private String getDailyLogSPKey(String date) {
         return SharedPrefsManager.KEYS.SP_KEY_PREFIX + KEYS.DAILY_LOGS + "_" + date;
+    }
+
+
+    private String getTotalLogSPKey() {
+        return SharedPrefsManager.KEYS.SP_KEY_PREFIX + KEYS.TOTAL;
     }
 
 

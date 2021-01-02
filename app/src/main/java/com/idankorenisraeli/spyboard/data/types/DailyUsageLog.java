@@ -17,8 +17,6 @@ public class DailyUsageLog extends UsageLog{
     private String date = TimeManager.getInstance().getDateOfToday();
 
 
-    //private ArrayList<String> passwordSuspicious; TBD
-
 
     public DailyUsageLog(){
 
@@ -29,26 +27,6 @@ public class DailyUsageLog extends UsageLog{
     }
 
 
-    /**
-     * This method will take an existing session and add it into this one
-     * @param session a single keyboard usage with a data of a single session
-     */
-    public void addLog(UsageLog session){
-
-        for(Map.Entry<String, Integer> entry : session.getWordFreq().entrySet()) {
-            Integer sessionSum = session.getWordFreq().getOrDefault(entry.getKey(), 0);
-            if(sessionSum!=null)
-                wordFreq.merge(entry.getKey(), entry.getValue(), Integer::sum);
-        }
-
-        for(String key : session.getCharFreq().keySet()) {
-            Integer sessionSum = session.getCharFreq().getOrDefault(key, 0);
-            if(sessionSum!=null)
-                charFreq.merge(key, sessionSum, Integer::sum);
-
-        }
-
-    }
 
     @Exclude
     public String getDate() {
