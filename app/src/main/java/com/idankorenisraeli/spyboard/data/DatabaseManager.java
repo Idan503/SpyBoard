@@ -1,7 +1,5 @@
 package com.idankorenisraeli.spyboard.data;
 
-import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -17,23 +15,20 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.idankorenisraeli.spyboard.common.SharedPrefsManager;
+import com.idankorenisraeli.spyboard.common.EncryptedSPManager;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.types.UsageLog;
-import com.idankorenisraeli.spyboard.input.SpyInputMethodService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 
 public class DatabaseManager {
 
     private static DatabaseManager instance = null;
 
     private final FirebaseFirestore database = FirebaseFirestore.getInstance();
-    private final SharedPrefsManager sharedPrefs = SharedPrefsManager.getInstance();
+    private final EncryptedSPManager sharedPrefs = EncryptedSPManager.getInstance();
     private final CollectionReference usersRef;
 
     private final ArrayList<DailyUsageLog> waitingList; //Logs that could not be saved to cloud
@@ -188,12 +183,12 @@ public class DatabaseManager {
     }
 
     private String getDailyLogSPKey(String date) {
-        return SharedPrefsManager.KEYS.SP_KEY_PREFIX + KEYS.DAILY_LOGS + "_" + date;
+        return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.DAILY_LOGS + "_" + date;
     }
 
 
     private String getTotalLogSPKey() {
-        return SharedPrefsManager.KEYS.SP_KEY_PREFIX + KEYS.TOTAL;
+        return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.TOTAL;
     }
 
 

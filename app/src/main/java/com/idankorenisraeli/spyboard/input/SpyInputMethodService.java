@@ -333,6 +333,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         super.onFinishInputView(finishingInput);
 
         endInputSession();
+        Log.i("pttt", "Finish");
 
     }
 
