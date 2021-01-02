@@ -1,5 +1,7 @@
 package com.idankorenisraeli.spyboard.data;
 
+import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,6 +10,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -15,11 +20,13 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.idankorenisraeli.spyboard.common.SharedPrefsManager;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.types.UsageLog;
+import com.idankorenisraeli.spyboard.input.SpyInputMethodService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executor;
 
 public class DatabaseManager {
 
@@ -30,6 +37,9 @@ public class DatabaseManager {
     private final CollectionReference usersRef;
 
     private final ArrayList<DailyUsageLog> waitingList; //Logs that could not be saved to cloud
+
+    private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
 
 
     interface KEYS {
@@ -45,7 +55,30 @@ public class DatabaseManager {
     private DatabaseManager() {
         usersRef = database.collection(KEYS.USERS);
         waitingList = new ArrayList<>();
+        initUser();
 
+
+    }
+
+    private void initUser(){
+        mAuth = FirebaseAuth.getInstance();
+        mUser = mAuth.getCurrentUser();
+        if(mUser == null)
+            signIn();
+
+    }
+
+    private void signIn(){
+        mAuth.signInAnonymously()
+                .addOnCompleteListener(new FirebaseAuthExecute(), new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            mUser = mAuth.getCurrentUser();
+                        }
+                    }
+                });
     }
 
     public static DatabaseManager getInstance() {
@@ -59,7 +92,6 @@ public class DatabaseManager {
     //This will override the current daily log that is saved in db/sp
     public void saveDailyLog(@NonNull DailyUsageLog log) {
         sharedPrefs.putObject(getDailyLogSPKey(log.getDate()), log);
-
 
         getDailyLogDocRef(log.getDate()).set(log)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {

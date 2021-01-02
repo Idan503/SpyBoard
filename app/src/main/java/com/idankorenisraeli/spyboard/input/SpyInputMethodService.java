@@ -29,7 +29,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     boolean hebrewMode = false;
     boolean symbol = false;
 
-
     Keyboard engKeyboard, hebKeyboard, symbolKeyboard;
 
     String currentDate;
@@ -37,10 +36,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     UsageLog sessionUsageLog;
     UsageLog totalLog;
 
-
     private static final int WORD_EST_LENGTH = 16; // size of new sb for better performance
     StringBuilder lastWordBuilder = new StringBuilder(WORD_EST_LENGTH); //Saving the last word user typed
-
 
     private DatabaseManager databaseManager;
 
@@ -71,7 +68,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         keyboardView.setPreviewEnabled(false);
 
 
-
     }
 
     private void initSavedLogs() {
@@ -82,20 +78,19 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     }
 
-    private void initDailyLog(){
+    private void initDailyLog() {
         dailyLog = databaseManager.loadDailyLog(currentDate);
 
-        if(dailyLog == null)
+        if (dailyLog == null)
             dailyLog = new DailyUsageLog();
     }
 
-    private void initTotalLog(){
+    private void initTotalLog() {
         totalLog = databaseManager.loadTotalLog();
 
-        if(totalLog == null)
+        if (totalLog == null)
             totalLog = new UsageLog();
     }
-
 
 
     //region Keyboard Actions
@@ -118,10 +113,11 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         if (TextUtils.isEmpty(selectedText)) {
             // no selection, so delete previous character
             ic.deleteSurroundingText(1, 0);
-            if (lastWordBuilder.length() > 0)
+            if (lastWordBuilder.length() > 0) {
                 lastWordBuilder.deleteCharAt(lastWordBuilder.length() - 1);
+                // delete the selection
+            }
         } else {
-            // delete the selection
             ic.commitText("", 1);
         }
     }
@@ -191,7 +187,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
                 word = word.substring(1); //delete symbol before word
         }
 
-        if(word.length() > 0)
+        if (word.length() > 0)
             sessionUsageLog.addWord(word);
     }
 
@@ -293,7 +289,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     public void onStartInputView(EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
 
-        if(dailyLog==null)
+        if (dailyLog == null)
             dailyLog = databaseManager.loadDailyLog(currentDate);
 
         if (sessionUsageLog == null)
@@ -339,24 +335,19 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         super.onWindowShown();
     }
 
-    @Override
-    public void onWindowHidden() {
-        super.onWindowHidden();
-    }
-
 
     private void endInputSession() {
         trackWordByBuilder();
         //Adding the last word written in this session
-        //Here we cannot use the cursor cause message might have been alrady sent
+        //Here we cannot use the cursor cause message might have been already sent
 
 
-        if(dailyLog==null)
+        if (dailyLog == null)
             initDailyLog();
         dailyLog.addLog(sessionUsageLog);
 
 
-        if(totalLog == null)
+        if (totalLog == null)
             initTotalLog();
         totalLog.addLog(sessionUsageLog);
 
