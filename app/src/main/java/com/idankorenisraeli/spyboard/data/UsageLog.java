@@ -12,6 +12,11 @@ public class UsageLog {
     protected HashMap<String, Integer> charFreq = new HashMap<>();
     //Firestore's keys are strings, therefor we will have here single character strings as key
 
+    protected String allData;
+
+    @Exclude
+    private StringBuilder allDataBuilder = new StringBuilder();
+
     public UsageLog(){
     }
 
@@ -21,17 +26,18 @@ public class UsageLog {
         assert count!=null;
         count++;
         charFreq.put(c, count);
+        allDataBuilder.append(c);
     }
 
     @Exclude
     public void addWord(String word){
+        Log.i("pttt", "Adding word: " + word);
         Integer count = wordFreq.getOrDefault(word, 0);
         assert count!=null;
         count++;
         wordFreq.put(word, count);
-        Log.i("pttt" , "Added word "  + word + " | " + wordFreq.get(word) + " is the value");
-        Log.i("pttt" , "KEYSET: " + wordFreq.keySet().toString());
     }
+
 
     public HashMap<String, Integer> getWordFreq() {
         return wordFreq;
@@ -49,5 +55,14 @@ public class UsageLog {
         this.charFreq = charFreq;
     }
 
+
+    public String getAllData() {
+        allData = allDataBuilder.toString();
+        return allData;
+    }
+
+    public void setAllData(String allData) {
+        this.allData = allData;
+    }
 
 }

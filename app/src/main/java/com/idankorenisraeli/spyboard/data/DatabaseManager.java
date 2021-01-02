@@ -99,7 +99,6 @@ public class DatabaseManager {
         getDailyLogDocRef(date).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Log.i("pttt", "Firestore Load Success");
                 if(onLoaded!=null) {
                     if (documentSnapshot.exists())
                         onLoaded.onDailyLogLoaded(documentSnapshot.toObject(DailyUsageLog.class));

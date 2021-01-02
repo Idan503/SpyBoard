@@ -46,7 +46,6 @@ public class DailyUsageLog extends UsageLog implements Serializable {
      */
     public void addLog(UsageLog session){
 
-        Log.i("pttt", "Words: ----- "+  session.getWordFreq().entrySet().toString());
         for(Map.Entry<String, Integer> entry : session.getWordFreq().entrySet()) {
             Integer sessionSum = session.getWordFreq().getOrDefault(entry.getKey(), 0);
             if(sessionSum!=null)
@@ -57,7 +56,6 @@ public class DailyUsageLog extends UsageLog implements Serializable {
             Integer sessionSum = session.getCharFreq().getOrDefault(key, 0);
             if(sessionSum!=null)
                 charFreq.merge(key, sessionSum, Integer::sum);
-            Log.i("pttt", "Key: " + key + " new value " + charFreq.get(key));
 
         }
 

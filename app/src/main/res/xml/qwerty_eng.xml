@@ -26,7 +26,7 @@
     <Row
         android:horizontalGap="2px"
         android:verticalGap="2px"
-        android:keyWidth="10%p">
+        android:keyWidth="10.1%p">
         <Key android:codes="113" android:keyLabel="q" android:keyEdgeFlags="left"/>
         <Key android:codes="119" android:keyLabel="w"/>
         <Key android:codes="101" android:keyLabel="e"/>
@@ -42,8 +42,8 @@
     <Row
         android:horizontalGap="2px"
         android:verticalGap="2px"
-        android:keyWidth="10%p">
-        <Key android:codes="97" android:keyLabel="a" android:horizontalGap="5%p"
+        android:keyWidth="10.1%p">
+        <Key android:codes="97" android:keyLabel="a" android:horizontalGap="3.5%p"
             android:keyEdgeFlags="left"/>
         <Key android:codes="115" android:keyLabel="s"/>
         <Key android:codes="100" android:keyLabel="d"/>
@@ -89,7 +89,7 @@
             android:keyWidth="41%p" android:isRepeatable="true"/>
         <Key android:codes="46" android:keyLabel="."
             android:keyWidth="9%p"/>
-        <Key android:codes="-10"
+        <Key android:codes="-10,10"
             android:keyIcon="@drawable/sym_keyboard_enter"
             android:keyWidth="19%p" android:keyEdgeFlags="right"/>
     </Row>
