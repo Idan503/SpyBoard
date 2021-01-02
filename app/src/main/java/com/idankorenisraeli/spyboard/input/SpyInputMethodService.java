@@ -129,6 +129,11 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     private void enterAction(InputConnection ic) {
         ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ENTER));
+
+        // Also performing "Done"
+        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, EditorInfo.IME_ACTION_DONE));
+        ic.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, EditorInfo.IME_ACTION_DONE));
     }
 
     private void charAction(int primaryCode, InputConnection ic) {
@@ -137,6 +142,9 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         if (keyboardView.isShifted())
             shiftAction();
+
+        if(typed.equals(" ") && symbol)
+            symbolAction(); // cancel symbol after space press
 
         trackKeyPress(typed);
     }
@@ -214,6 +222,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         public void onRelease(int primaryCode) {
 
         }
+
 
 
         @Override
