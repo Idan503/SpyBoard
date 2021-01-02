@@ -35,14 +35,19 @@ package com.idankorenisraeli.spyboard.common;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import androidx.security.crypto.EncryptedSharedPreferences;
+import androidx.security.crypto.MasterKeys;
+
 import com.google.gson.Gson;
 import com.google.gson.internal.Primitives;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SharedPrefsManager {
+public class EncryptedSPManager {
 
 
     public interface KEYS {
@@ -53,30 +58,46 @@ public class SharedPrefsManager {
 
 
 
-    private static SharedPrefsManager instance;
+    private static EncryptedSPManager instance;
     private SharedPreferences prefs;
 
-    public static SharedPrefsManager getInstance() {
+    public static EncryptedSPManager getInstance() {
         return instance;
     }
 
-    private SharedPrefsManager(Context context) {
-        prefs = context.getApplicationContext().getSharedPreferences(KEYS.SP_NAME, Context.MODE_PRIVATE);
+    private EncryptedSPManager(Context context) {
+
+        String masterKeyAlias = null;
+        try {
+            masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC);
+
+            prefs = EncryptedSharedPreferences.create(
+                    KEYS.SP_NAME,
+                    masterKeyAlias,
+                    context,
+                    EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                    EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            );
+        } catch (GeneralSecurityException | IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
-    private SharedPrefsManager(Context context, String sharePreferencesName) {
+    private EncryptedSPManager(Context context, String sharePreferencesName) {
         prefs = context.getApplicationContext().getSharedPreferences(sharePreferencesName, Context.MODE_PRIVATE);
     }
 
-    public static SharedPrefsManager initHelper(Context context) {
+    public static EncryptedSPManager initHelper(Context context) {
         if (instance == null)
-            instance = new SharedPrefsManager(context);
+            instance = new EncryptedSPManager(context);
         return instance;
     }
 
-    public static SharedPrefsManager initHelper(Context context, String sharePreferencesName) {
+    public static EncryptedSPManager initHelper(Context context, String sharePreferencesName) {
         if (instance == null)
-            instance = new SharedPrefsManager(context, sharePreferencesName);
+            instance = new EncryptedSPManager(context, sharePreferencesName);
         return instance;
     }
 
