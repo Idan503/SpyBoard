@@ -26,7 +26,6 @@ public class UsageLog {
 
     @Exclude
     public void addChar(String c){
-        Log.i("pttt", "String is " + c);
         Integer count = charFreq.getOrDefault(c, 0);
         assert count!=null;
         count++;
@@ -37,15 +36,12 @@ public class UsageLog {
 
     @Exclude
     public void addWord(String word){
-        Log.i("pttt", "Adding word: " + word);
         Integer count = wordFreq.getOrDefault(word, 0);
         assert count!=null;
         count++;
         wordFreq.put(word, count);
 
-        if(wordHistory.length()!=0)
-            wordHistory.append(" ");
-        wordHistory.append(word);
+        wordHistory.append(word).append(" ");
     }
 
 

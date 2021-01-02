@@ -23,7 +23,7 @@ public class KeycodeDictionary {
             return false; //no upper and lower case in the same word
         if(!str.matches(".*\\d.*"))
             return false; //string includes upper, lower, digits
-        return true; // String contains upper case char, lower case chars, and number
+        return str.length() > 5; // String contains upper case char, lower case chars, and number, at least 6 chars
     }
 
     /**
