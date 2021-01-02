@@ -38,14 +38,5 @@ public class DailyUsageLog extends UsageLog{
     }
 
 
-    /*
-    public ArrayList<String> getPasswordSuspicious() {
-        return passwordSuspicious;
-    }
-
-    public void setPasswordSuspicious(ArrayList<String> passwordSuspicious) {
-        this.passwordSuspicious = passwordSuspicious;
-    }
-*/
 
 }

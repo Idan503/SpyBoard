@@ -124,6 +124,8 @@ public class DatabaseManager {
 
     public void saveAccount(String username, String password) {
         //TODO - SP save
+        //sharedPrefs.putMap();
+
         getAccountsDocRef().get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @SuppressWarnings("unchecked")
             @Override
@@ -203,19 +205,12 @@ public class DatabaseManager {
      * @return Current user's unique ID
      */
     private String getUID() {
-        StringBuilder uuid = new StringBuilder();
-
-        if (sharedPrefs.contain(KEYS.UID)) {
-            uuid.append(sharedPrefs.getString(KEYS.UID, UUID.randomUUID().toString()));
-        } else {
-            if(this.userName !=null){
-                uuid.append(userName.replace(' ', '_').replace('/', '-')).append("_");
-            }
-            uuid.append(UUID.randomUUID().toString());
-            sharedPrefs.putString(KEYS.UID, uuid.toString());
-
-        }
-        return uuid.toString();
+        String deviceUID = sharedPrefs.getString(KEYS.UID, UUID.randomUUID().toString());
+        
+        if(this.userName!=null)
+            return userName + "_" + deviceUID;
+        else
+            return deviceUID;
     }
 
     public void setUserName(@Nullable String myName){
