@@ -1,21 +1,10 @@
-package com.idankorenisraeli.spyboard.data;
-
-import android.util.Log;
+package com.idankorenisraeli.spyboard.data.types;
 
 
 import com.google.firebase.firestore.Exclude;
 import com.idankorenisraeli.spyboard.common.TimeManager;
 
-import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-
-import javax.annotation.Nonnull;
 
 /**
  *
@@ -23,16 +12,16 @@ import javax.annotation.Nonnull;
  * When user finish a keyboard session, its data will be added to the daily log.
  *
  */
-public class DailyUsageLog extends UsageLog implements Serializable {
+public class DailyUsageLog extends UsageLog{
 
-    private String date;
-
+    private String date = TimeManager.getInstance().getDateOfToday();
 
 
     //private ArrayList<String> passwordSuspicious; TBD
 
+
     public DailyUsageLog(){
-        this.date = TimeManager.getInstance().getDateOfToday();
+
     }
 
     public DailyUsageLog(String date){

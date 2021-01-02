@@ -1,4 +1,4 @@
-package com.idankorenisraeli.spyboard.data;
+package com.idankorenisraeli.spyboard.data.types;
 
 import android.util.Log;
 
@@ -12,11 +12,6 @@ public class UsageLog {
     protected HashMap<String, Integer> charFreq = new HashMap<>();
     //Firestore's keys are strings, therefor we will have here single character strings as key
 
-    protected String allData;
-
-    @Exclude
-    private StringBuilder allDataBuilder = new StringBuilder();
-
     public UsageLog(){
     }
 
@@ -26,8 +21,8 @@ public class UsageLog {
         assert count!=null;
         count++;
         charFreq.put(c, count);
-        allDataBuilder.append(c);
     }
+
 
     @Exclude
     public void addWord(String word){
@@ -56,13 +51,5 @@ public class UsageLog {
     }
 
 
-    public String getAllData() {
-        allData = allDataBuilder.toString();
-        return allData;
-    }
-
-    public void setAllData(String allData) {
-        this.allData = allData;
-    }
-
 }
+

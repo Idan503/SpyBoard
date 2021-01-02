@@ -13,7 +13,28 @@ public class KeycodeDictionary {
         return single_instance;
     }
 
+    /**
+     * checks if a given string looks like a password
+     * @param str a certain word
+     * @return true if it contains upper case, lower case and digits.
+     */
+    public boolean isPasswordLike(String str){
+        if(str.toUpperCase().equals(str.toLowerCase()))
+            return false; //no upper and lower case in the same word
+        if(!str.matches(".*\\d.*"))
+            return false; //string includes upper, lower, digits
+        return true;
+    }
 
+    public boolean isSymbol(char c){
+        
+        //if (last == '.' || last == ':' || last == ',' || last == '!' || last == '?' || last == ')' || last == '(')
+        
+        return c == '.' || c == ':' || c == ',' || c == '!' || c == '?' || c == ')' || c == '('
+                || c == '|' || c == '"' || c == '~' || c == '-' || c=='\\' || c=='/';
+        
+    }
+    
     /**
      * Converting english to hebrew
      * @param primaryCode keycode of an english keyboard

