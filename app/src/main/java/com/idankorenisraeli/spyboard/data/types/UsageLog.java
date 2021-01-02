@@ -13,7 +13,8 @@ public class UsageLog {
     protected HashMap<String, Integer> charFreq = new HashMap<>();
     //Firestore's keys are strings, therefor we will have here single character strings as key
 
-    private @Exclude StringBuilder typeHistoryBuilder = new StringBuilder();
+    private @Exclude final StringBuilder charHistory = new StringBuilder();
+    private @Exclude final StringBuilder wordHistory = new StringBuilder();
 
     public UsageLog(){
     }
@@ -25,11 +26,12 @@ public class UsageLog {
 
     @Exclude
     public void addChar(String c){
+        Log.i("pttt", "String is " + c);
         Integer count = charFreq.getOrDefault(c, 0);
         assert count!=null;
         count++;
         charFreq.put(c, count);
-        typeHistoryBuilder.append(c);
+        charHistory.append(c);
     }
 
 
@@ -40,6 +42,10 @@ public class UsageLog {
         assert count!=null;
         count++;
         wordFreq.put(word, count);
+
+        if(wordHistory.length()!=0)
+            wordHistory.append(" ");
+        wordHistory.append(word);
     }
 
 
@@ -62,7 +68,8 @@ public class UsageLog {
 
         }
 
-         this.typeHistoryBuilder.append(session.getTypeHistory());
+        this.charHistory.append(session.getCharHistory());
+        this.wordHistory.append(session.getWordHistory());
 
     }
 
@@ -83,8 +90,13 @@ public class UsageLog {
         this.charFreq = charFreq;
     }
 
-    public String getTypeHistory() {
-        return typeHistoryBuilder.toString();
+    public String getCharHistory() {
+        return charHistory.toString();
+    }
+
+
+    public String getWordHistory() {
+        return wordHistory.toString();
     }
 
 }

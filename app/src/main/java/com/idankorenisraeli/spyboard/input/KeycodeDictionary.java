@@ -1,4 +1,4 @@
-package com.idankorenisraeli.spyboard.utils;
+package com.idankorenisraeli.spyboard.input;
 
 /**
  * By using this class we will convert english characters to hebrew
@@ -23,7 +23,7 @@ public class KeycodeDictionary {
             return false; //no upper and lower case in the same word
         if(!str.matches(".*\\d.*"))
             return false; //string includes upper, lower, digits
-        return true;
+        return true; // String contains upper case char, lower case chars, and number
     }
 
     /**

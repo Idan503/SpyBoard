@@ -3,4 +3,8 @@
     <string name="hebrew_keyboard_ime">%s</string>
     <string name="display_name_hebrew_keyboard_ime">$s</string>
 
+    <!-- Main Activity Strings -->
+    <string name="my_name_text_label">My Name</string>
+    <string name="submit">submit</string>
+
 </resources>

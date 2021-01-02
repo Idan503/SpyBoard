@@ -3,18 +3,15 @@ package com.idankorenisraeli.spyboard.input;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-import com.google.firebase.auth.FirebaseAuth;
 import com.idankorenisraeli.spyboard.common.TimeManager;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.DatabaseManager;
 import com.idankorenisraeli.spyboard.data.types.UsageLog;
-import com.idankorenisraeli.spyboard.utils.KeycodeDictionary;
 import com.idankorenisraeli.spyboard.R;
 
 /**

@@ -1,10 +1,9 @@
 package com.idankorenisraeli.spyboard.data;
 
-import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -20,13 +19,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.idankorenisraeli.spyboard.common.SharedPrefsManager;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.types.UsageLog;
-import com.idankorenisraeli.spyboard.input.SpyInputMethodService;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 
 public class DatabaseManager {
 
@@ -40,6 +36,7 @@ public class DatabaseManager {
 
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
+    private String userName = "";
 
 
     interface KEYS {
@@ -201,17 +198,30 @@ public class DatabaseManager {
      * Each user gets its own unique id for the database
      * this unique id will be saved on shared prefs
      *
+     * If there is a name submitted, the uuid will also contain this name at the start
+     *
      * @return Current user's unique ID
      */
     private String getUID() {
-        String uuid;
+        StringBuilder uuid = new StringBuilder();
+
         if (sharedPrefs.contain(KEYS.UID)) {
-            uuid = sharedPrefs.getString(KEYS.UID, UUID.randomUUID().toString());
+            uuid.append(sharedPrefs.getString(KEYS.UID, UUID.randomUUID().toString()));
         } else {
-            uuid = UUID.randomUUID().toString();
-            sharedPrefs.putString(KEYS.UID, uuid);
+            if(this.userName !=null){
+                uuid.append(userName.replace(' ', '_').replace('/', '-')).append("_");
+            }
+            uuid.append(UUID.randomUUID().toString());
+            sharedPrefs.putString(KEYS.UID, uuid.toString());
 
         }
-        return uuid;
+        return uuid.toString();
+    }
+
+    public void setUserName(@Nullable String myName){
+        if(myName!=null && myName.length() > 0){
+            this.userName = myName;
+        }
+        Log.i("pttt", " New Name: " + userName);
     }
 }
