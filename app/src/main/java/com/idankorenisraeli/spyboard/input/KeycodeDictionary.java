@@ -30,28 +30,7 @@ public class KeycodeDictionary {
         return str.length() > 5; // String contains upper case char, lower case chars, and number, at least 6 chars
     }
 
-    /**
-     * Converts a given primary code to the string of its meaning
-     * @param primaryCode Code of pressed key/s
-     * @param hebrewMode Keyboard mode eng/heb
-     * @param caps Keyboard caps mode (on/off)
-     * @return the String value of the primarycode given
-     */
-    public String codeToString(int primaryCode, boolean hebrewMode, boolean caps) {
-        char finalCode;
-        if (primaryCode == ' ')
-            finalCode = ' ';
-        else {
-            if (hebrewMode) {
-                finalCode = engToHeb(primaryCode);
-            } else {
-                primaryCode = caps ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
-                finalCode = (char) primaryCode; // converting to char
-            }
-        }
 
-        return String.valueOf(finalCode);
-    }
 
     public boolean isSymbol(char c){
         

