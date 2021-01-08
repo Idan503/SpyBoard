@@ -9,8 +9,8 @@
 
     <color name="black">#FF000000</color>
     <color name="blue">#3769FF</color>
-    <color name="key_background">#F7FBFE</color>
-    <color name="keyboard_background">#656565</color>
-    <color name="key_label_primary">#252525</color>
-    <color name="key_label_secondary">#77797A</color>
+    <color name="key_background">#2A2A2C</color>
+    <color name="keyboard_background">#1C1F28</color>
+    <color name="key_label_primary">#F7FBFE</color>
+    <color name="key_label_secondary">#C6C6C6</color>
 </resources>
