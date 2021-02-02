@@ -9,9 +9,9 @@ This app contains fully functional English & Hebrew keyboards that can be used a
 
 
 ## Screenshots
-  <p float="left" align="middle" padding="10">
-  <img src="/screenshots/screenshot_eng.png?raw=true" width="320" />
-  <img src="/screenshots/screenshot_heb.png?raw=true" width="320" /> 
+  <p float="left" align="middle" padding="25">
+  <img src="/screenshots/screenshot_eng.png?raw=true" width="240" />
+  <img src="/screenshots/screenshot_heb.png?raw=true" width="240" /> 
 </p>
 
 >_SpyBoard_ also supports light theme mode (determined by device settings) 
@@ -21,12 +21,9 @@ This app contains fully functional English & Hebrew keyboards that can be used a
 The following sequence diagram represents how SpyBoard typed data is being saved to device's storage using SharedPrefrences as well as to cloud using Firebase Firestore:
   
 
-```mermaid  
-sequenceDiagram  
-User->> SpyBoard: Typing something...  
-SpyBoard->>SP & FireStore: Encription & Save / Upload
-  
-```  
+  <p float="left" align="middle" padding="0">
+  <img src="/screenshots/seq_diagram.png?raw=true" width="340" />
+</p>
 </br>
 </br>
 
