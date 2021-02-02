@@ -1,5 +1,6 @@
 package com.idankorenisraeli.spyboard.input;
 
+import android.content.Intent;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.text.TextUtils;
@@ -9,6 +10,8 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import com.idankorenisraeli.spyboard.activity.InitActivity;
+import com.idankorenisraeli.spyboard.common.CommonUtils;
 import com.idankorenisraeli.spyboard.common.TimeManager;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.DatabaseManager;
@@ -22,6 +25,7 @@ import com.idankorenisraeli.spyboard.R;
 public class SpyInputMethodService extends android.inputmethodservice.InputMethodService {
     SpyKeyboardView keyboardView;
     KeycodeDictionary dictionary;
+
 
     boolean caps = false;
     boolean hebrewMode = false;
@@ -47,9 +51,10 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     @Override
     public View onCreateInputView() {
+        //Log.i("pttt", "Create Input View");
         keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_blue, null);
+
         initKeyboards();
-        initSavedLogs();
 
         return keyboardView;
     }
@@ -122,6 +127,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     }
 
     private void shiftAction() {
+        if(symbol)
+            return; //prevent shift action while in symbol mode
         caps = !caps;
         keyboardView.setShifted(caps);
     }
@@ -337,6 +344,9 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     public void onStartInputView(EditorInfo info, boolean restarting) {
         super.onStartInputView(info, restarting);
 
+        if(databaseManager==null)
+            initSavedLogs();
+
         if (dailyLog == null)
             dailyLog = databaseManager.loadDailyLog(currentDate);
 
@@ -353,11 +363,24 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     }
 
 
+
     //This called before onStarted
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
 
+        if(databaseManager==null)
+            initSavedLogs();
+
+        if(databaseManager.getUserName()==null) {
+            // Username is not set yet, creating the init keyboard activity
+            if(!databaseManager.isInitActivityShown()) {
+                CommonUtils.getInstance().showToast("Please set a Username");
+                Intent intent = new Intent(SpyInputMethodService.this, InitActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }
 
         if (keyboardView != null && keyboardView.isShifted())
             shiftAction();
@@ -372,7 +395,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         super.onFinishInputView(finishingInput);
 
         endInputSession();
-        Log.i("pttt", "FinishInputView");
+//        Log.i("pttt", "FinishInputView");
 
     }
 
@@ -383,6 +406,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         trackWordByBuilder();
         super.onWindowShown();
     }
+
 
 
     private void endInputSession() {

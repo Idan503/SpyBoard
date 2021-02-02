@@ -11,7 +11,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.idankorenisraeli.spyboard.R;
 import com.idankorenisraeli.spyboard.data.DatabaseManager;
 
-public class MainActivity extends AppCompatActivity {
+public class InitActivity extends AppCompatActivity {
 
     MaterialButton submitButton;
     TextInputEditText nameEditText;
@@ -53,4 +53,28 @@ public class MainActivity extends AppCompatActivity {
         this.submitButton = findViewById(R.id.main_BTN_submit);
         this.nameEditText = findViewById(R.id.main_EDT_name);
     }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        DatabaseManager.getInstance().setInitActivityShown(true);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        DatabaseManager.getInstance().setInitActivityShown(false);
+        finish();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        DatabaseManager.getInstance().setInitActivityShown(false);
+        finish();
+    }
+
+
 }

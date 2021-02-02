@@ -2,6 +2,8 @@ package com.idankorenisraeli.spyboard.common;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -22,6 +24,9 @@ import androidx.annotation.NonNull;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.InputMismatchException;
+import java.util.List;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 // Glide library should be imported to the project before using this class
 // https://github.com/bumptech/glide
@@ -133,6 +138,13 @@ public class CommonUtils {
                 builder.append(c);
         }
         return builder.toString();
+    }
+
+    public boolean isForeground(String myPackage) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> runningTaskInfo = manager.getRunningTasks(1);
+        ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
+        return componentInfo.getPackageName().equals(myPackage);
     }
 
     //endregion

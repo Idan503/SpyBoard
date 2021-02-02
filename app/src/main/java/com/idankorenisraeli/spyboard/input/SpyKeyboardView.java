@@ -14,11 +14,10 @@ import java.util.List;
 
 public class SpyKeyboardView extends android.inputmethodservice.KeyboardView {
 
-    Context context;
+    private Context context;
 
     public SpyKeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        // TODO Auto-generated constructor stub
         this.context = context;
     }
 
@@ -26,6 +25,7 @@ public class SpyKeyboardView extends android.inputmethodservice.KeyboardView {
     public void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        Log.i("pttt", "Keyboard Drawn");
         /*List<Keyboard.Key> keys = getKeyboard().getKeys();
         for (Keyboard.Key key : keys) {
             if (key.codes[0] == 7) {
@@ -43,4 +43,5 @@ public class SpyKeyboardView extends android.inputmethodservice.KeyboardView {
 
          */
     }
+
 }

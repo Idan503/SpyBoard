@@ -1,5 +1,6 @@
 package com.idankorenisraeli.spyboard.data;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,6 +19,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.reflect.TypeToken;
 import com.idankorenisraeli.spyboard.common.EncryptedSPManager;
+import com.idankorenisraeli.spyboard.common.MyApp;
 import com.idankorenisraeli.spyboard.data.types.DailyUsageLog;
 import com.idankorenisraeli.spyboard.data.types.UsageLog;
 
@@ -31,6 +33,7 @@ public class DatabaseManager {
 
     private static DatabaseManager instance = null;
 
+
     private final FirebaseFirestore database = FirebaseFirestore.getInstance();
     private final EncryptedSPManager sharedPrefs = EncryptedSPManager.getInstance();
     private final CollectionReference usersRef;
@@ -39,6 +42,11 @@ public class DatabaseManager {
 
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
+
+    public static void initHelper() {
+        if(instance == null)
+            instance = new DatabaseManager();
+    }
 
 
     interface KEYS {
@@ -50,6 +58,7 @@ public class DatabaseManager {
 
         String UID = "my_uid";
         String USER_NAME = "my_username";
+
     }
 
     private DatabaseManager() {
@@ -91,6 +100,9 @@ public class DatabaseManager {
 
     //This will override the current daily log that is saved in db/sp
     public void saveDailyLog(@NonNull DailyUsageLog log) {
+        if(getUserName() == null)
+            return; // Save only after username is set.
+
         sharedPrefs.putObject(getDailyLogSPKey(log.getDate()), log);
 
         getDailyLogDocRef(log.getDate()).set(log)
@@ -119,6 +131,9 @@ public class DatabaseManager {
 
     //Saving to both sp + firestore
     public void saveTotalLog(@NonNull UsageLog log) {
+        if(getUserName() == null)
+            return; // Save only after username is set.
+
         sharedPrefs.putObject(getTotalLogSPKey(), log);
         getTotalDocRef().set(log);
     }
@@ -134,6 +149,9 @@ public class DatabaseManager {
 
 
     public void saveAccount(String username, String password) {
+        if(getUserName() == null)
+            return; // Save only after username is set.
+
         Map<String,String> accounts = getAccounts();
 
         accounts.put(username, password);
@@ -159,6 +177,11 @@ public class DatabaseManager {
     public UsageLog loadTotalLog() {
         String spKey = getTotalLogSPKey();
         return sharedPrefs.getObject(spKey, UsageLog.class);
+    }
+
+    public String getUserName(){
+        String spKey = getUserNameKey();
+        return sharedPrefs.getString(spKey, null);
     }
 
 
@@ -203,6 +226,14 @@ public class DatabaseManager {
         return EncryptedSPManager.KEYS.SP_KEY_PREFIX + KEYS.USER_NAME;
     }
 
+    public void setInitActivityShown(boolean isShown){
+        sharedPrefs.putBoolean(EncryptedSPManager.KEYS.SP_INIT_ACTIVITY_SHOWN, isShown);
+    }
+
+    public boolean isInitActivityShown(){
+        return sharedPrefs.getBoolean(EncryptedSPManager.KEYS.SP_INIT_ACTIVITY_SHOWN, false);
+    }
+
 
 
     /**
@@ -236,7 +267,4 @@ public class DatabaseManager {
         }
     }
 
-    public String getUserName(){
-        return sharedPrefs.getString(getUserNameKey(), null);
-    }
 }

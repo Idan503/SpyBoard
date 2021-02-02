@@ -53,6 +53,7 @@ public class EncryptedSPManager {
     public interface KEYS {
         String SP_NAME = "SPYBOARD_SP_DB";
 
+        String SP_INIT_ACTIVITY_SHOWN = "INIT_ACTIVITY";
         String SP_KEY_PREFIX = "SP_SPYBOARD_";
     }
 
