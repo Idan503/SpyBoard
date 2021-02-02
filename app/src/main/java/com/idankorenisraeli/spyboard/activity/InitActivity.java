@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
                     if (name != null) {
                         DatabaseManager.getInstance().setUserName(name.toString());
                         disableInterface();
+                        finish();
                     }
                 }
             });
