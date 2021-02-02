@@ -51,9 +51,13 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     @Override
     public View onCreateInputView() {
+<<<<<<< HEAD
         //Log.i("pttt", "Create Input View");
         keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_blue, null);
 
+=======
+        keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_white, null);
+>>>>>>> ad09c24604eec0f136ceeda477b176ea292e9e20
         initKeyboards();
 
         return keyboardView;
@@ -116,10 +120,20 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
         CharSequence selectedText = ic.getSelectedText(0);
         if (TextUtils.isEmpty(selectedText)) {
             // no selection, so delete previous character
-            ic.deleteSurroundingText(1, 0);
-            if (lastWordBuilder.length() > 0) {
-                lastWordBuilder.deleteCharAt(lastWordBuilder.length() - 1);
-                // delete the selection
+            CharSequence c = ic.getTextBeforeCursor(1, 0);
+            if(c.length() > 0) {
+                if (Character.isSurrogate(c.charAt(0))) {
+                    // deleting emoji (Surrogate Character)
+                    KeyEvent keyEventDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
+                    ic.sendKeyEvent(keyEventDown);
+                } else {
+                    //regular delete
+                    ic.deleteSurroundingText(1, 0);
+                    if (lastWordBuilder.length() > 0) {
+                        lastWordBuilder.deleteCharAt(lastWordBuilder.length() - 1);
+                        // delete the selection
+                    }
+                }
             }
         } else {
             ic.commitText("", 1);

@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.inputmethodservice.KeyboardView
+<com.idankorenisraeli.spyboard.input.SpyKeyboardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/keyboard_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:keyBackground="@color/light_gray"
-
+    android:keyBackground="@color/key_background"
+    android:keyTextColor="@color/key_label_primary"
+    android:shadowRadius="0"
+    android:background="@color/keyboard_background"
     android:layout_alignParentBottom="true">
 
-</android.inputmethodservice.KeyboardView>
+</com.idankorenisraeli.spyboard.input.SpyKeyboardView>
