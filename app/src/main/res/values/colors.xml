@@ -9,14 +9,14 @@
 
     <color name="black">#FF000000</color>
     <color name="blue">#3769FF</color>
-<<<<<<< HEAD
+
     <color name="lighter_gray">#EEEEEE</color>
     <color name="light_gray">#DDDDDD</color>
-</resources>
-=======
+
     <color name="key_background">#F7FBFE</color>
     <color name="keyboard_background">#656565</color>
-    <color name="key_label_primary">#252525</color>
+    <color name="key_label_primary">#3A3A3A</color>
     <color name="key_label_secondary">#77797A</color>
+
 </resources>
->>>>>>> ad09c24604eec0f136ceeda477b176ea292e9e20
+

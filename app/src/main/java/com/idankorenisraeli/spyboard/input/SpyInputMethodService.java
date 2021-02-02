@@ -51,13 +51,8 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
 
     @Override
     public View onCreateInputView() {
-<<<<<<< HEAD
-        //Log.i("pttt", "Create Input View");
-        keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_blue, null);
 
-=======
         keyboardView = (SpyKeyboardView) getLayoutInflater().inflate(R.layout.keyboard_view_white, null);
->>>>>>> ad09c24604eec0f136ceeda477b176ea292e9e20
         initKeyboards();
 
         return keyboardView;
