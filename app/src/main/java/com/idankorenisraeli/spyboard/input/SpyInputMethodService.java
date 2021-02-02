@@ -117,7 +117,6 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
                     // deleting emoji (Surrogate Character)
                     KeyEvent keyEventDown = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL);
                     ic.sendKeyEvent(keyEventDown);
-
                 } else {
                     //regular delete
                     ic.deleteSurroundingText(1, 0);
