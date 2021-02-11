@@ -31,6 +31,7 @@ import java.util.UUID;
 
 public class DatabaseManager {
 
+    //Singleton
     private static DatabaseManager instance = null;
 
 
@@ -98,7 +99,10 @@ public class DatabaseManager {
     }
 
 
-    //This will override the current daily log that is saved in db/sp
+    /** This will override the current daily log that is saved in db/sp
+     *  And replace it with the new one
+     * @param log A new daily usage log to save
+     */
     public void saveDailyLog(@NonNull DailyUsageLog log) {
         if(getUserName() == null)
             return; // Save only after username is set.
@@ -139,8 +143,6 @@ public class DatabaseManager {
     }
 
     public Map<String, String> getAccounts(){
-        // getMap(MySharedPreferencesV4.KEYS.SP_PLAYLISTS, new TypeToken<HashMap<String, Playlist>>() {});
-        // type token == new TypeToken<ArrayList<YOUR_CLASS>>() {}
         HashMap<String,String> accounts = sharedPrefs.getMap(getAccountsSPKey(), new TypeToken<HashMap<String,String>>(){});
         if(accounts==null)
             return new HashMap<>();
@@ -162,8 +164,8 @@ public class DatabaseManager {
 
 
     /**
-     * Load from sp
-     *
+     * Load from encrypted sp
+     * encrypted Sharedprefs will be always up to date
      * @param date Date of log to load from device
      */
     public DailyUsageLog loadDailyLog(String date) {

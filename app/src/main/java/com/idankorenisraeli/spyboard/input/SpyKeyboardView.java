@@ -12,36 +12,15 @@ import android.util.Log;
 
 import java.util.List;
 
+/**
+ * Provides a distinctive keyboard class view to the keyboard of this application
+ */
 public class SpyKeyboardView extends android.inputmethodservice.KeyboardView {
 
-    private Context context;
 
     public SpyKeyboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        this.context = context;
     }
 
-    @Override
-    public void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-
-        Log.i("pttt", "Keyboard Drawn");
-        /*List<Keyboard.Key> keys = getKeyboard().getKeys();
-        for (Keyboard.Key key : keys) {
-            if (key.codes[0] == 7) {
-                Log.e("KEY", "Drawing key with code " + key.codes[0]);
-                Drawable dr = (Drawable) context.getResources().getDrawable(R.drawable.sym_keyboard_delete);
-                dr.setBounds(key.x, key.y, key.x + key.width, key.y + key.height);
-                dr.draw(canvas);
-
-            } else {
-                Drawable dr = (Drawable) context.getResources().getDrawable(R.drawable.sym_keyboard_delete);
-                dr.setBounds(key.x, key.y, key.x + key.width, key.y + key.height);
-                dr.draw(canvas);
-            }
-        }
-
-         */
-    }
 
 }

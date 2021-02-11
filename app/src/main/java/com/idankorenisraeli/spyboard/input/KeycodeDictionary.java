@@ -109,7 +109,6 @@ public class KeycodeDictionary {
             case 881:
                 return '-';
 
-
         }
         return (char)primaryCode; // couldn't find any heb key
     }
