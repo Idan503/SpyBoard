@@ -22,7 +22,7 @@ The following sequence diagram represents how SpyBoard typed data is being saved
   
 </br>
   <p float="left" align="middle" padding="0">
-  <img src="/screenshots/seq_diagram.png?raw=true" width="635" />
+  <img src="/screenshots/seq_diagram.png?raw=true" width="665" />
 </p>
 </br>
 </br>
