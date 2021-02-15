@@ -10,7 +10,7 @@
     <color name="black">#FF000000</color>
     <color name="blue">#3769FF</color>
     <color name="key_background">#2A2A2C</color>
-    <color name="keyboard_background">#1C1F28</color>
+    <color name="keyboard_background">#171A23</color>
     <color name="key_label_primary">#F7FBFE</color>
     <color name="key_label_secondary">#C6C6C6</color>
 </resources>

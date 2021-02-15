@@ -169,8 +169,6 @@ public class DatabaseManager {
      * @param date Date of log to load from device
      */
     public DailyUsageLog loadDailyLog(String date) {
-        Log.i("pttt", "Trying to load " + date);
-
         String spKey = getDailyLogSPKey(date);
         return sharedPrefs.getObject(spKey, DailyUsageLog.class);
 

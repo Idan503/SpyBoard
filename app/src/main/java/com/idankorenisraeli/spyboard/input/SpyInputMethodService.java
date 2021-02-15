@@ -381,18 +381,7 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
 
-        if(databaseManager==null)
-            initSavedLogs();
 
-        if(databaseManager.getUserName()==null) {
-            // Username is not set yet, creating the init keyboard activity
-            if(!databaseManager.isInitActivityShown()) {
-                CommonUtils.getInstance().showToast("Please set a Username");
-                Intent intent = new Intent(SpyInputMethodService.this, InitActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-            }
-        }
 
         if (keyboardView != null && keyboardView.isShifted())
             shiftAction();
@@ -402,12 +391,24 @@ public class SpyInputMethodService extends android.inputmethodservice.InputMetho
     }
 
 
+
     @Override
     public void onFinishInputView(boolean finishingInput) {
         super.onFinishInputView(finishingInput);
 
+        if(databaseManager==null)
+            initSavedLogs();
+
+        if(databaseManager.getUserName()==null) {
+            // Username is not set yet, creating the init keyboard activity
+            if(!databaseManager.isInitActivityShown()) {
+                Intent intent = new Intent(SpyInputMethodService.this, InitActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+        }
+
         endInputSession();
-//        Log.i("pttt", "FinishInputView");
 
     }
 

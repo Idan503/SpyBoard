@@ -24,7 +24,6 @@ public class KeycodeDictionary {
         if(str.toUpperCase().equals(str.toLowerCase()))
             return false; //no upper and lower case in the same word
         if(!str.matches(".*\\d.*")) {
-            Log.i("pttt", "REGEX");
             return false; //string includes upper, lower, digits
         }
         return str.length() > 5; // String contains upper case char, lower case chars, and number, at least 6 chars
